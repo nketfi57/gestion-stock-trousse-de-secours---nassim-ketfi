@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion Trousse de Secours</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,164 +13,173 @@
         }
 
         :root {
-            --primary: #0f172a;
-            --primary-light: #1e293b;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --success-hover: #059669;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-700: #334155;
-            --gray-900: #0f172a;
-            --white: #ffffff;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --primary: #0a0e27;
+            --primary-light: #1a1f3a;
+            --accent: #00d9ff;
+            --accent-glow: rgba(0, 217, 255, 0.3);
+            --success: #00ff9f;
+            --warning: #ffd60a;
+            --danger: #ff006e;
+            --bg-gradient: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow); }
+            50% { box-shadow: 0 0 30px var(--accent-glow), 0 0 60px var(--accent-glow); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-gradient);
             background-attachment: fixed;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            color: var(--gray-900);
-        }
-
-        .container {
-            background: var(--white);
-            border-radius: 1.5rem;
-            box-shadow: var(--shadow-xl);
-            width: 100%;
-            max-width: 1400px;
-            overflow: hidden;
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: var(--white);
-            padding: 3rem 2rem;
-            text-align: center;
+            color: var(--text-primary);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        .header::before {
+        body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 159, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .header-content {
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
             position: relative;
             z-index: 1;
         }
 
-        .header .icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
+        .header {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px var(--accent-glow));
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.025em;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 1.125rem;
-            opacity: 0.9;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .content {
-            padding: 2.5rem;
-        }
-
-        .auth-form {
-            max-width: 440px;
-            margin: 0 auto;
-            padding: 2rem;
+        .auth-card {
+            max-width: 500px;
+            margin: 4rem auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease-out;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         label {
             display: block;
             font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 0.625rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
             font-size: 0.875rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
         }
 
         input {
             width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--gray-200);
-            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
             font-size: 1rem;
-            transition: all 0.2s;
-            background: var(--white);
-            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            transition: all 0.3s ease;
         }
 
         input:hover {
-            border-color: var(--gray-300);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.07);
         }
 
         input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .btn {
             width: 100%;
-            padding: 0.875rem 1.5rem;
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 0.75rem;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             position: relative;
             overflow: hidden;
         }
@@ -178,44 +187,43 @@
         .btn::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
 
         .btn:hover::before {
-            width: 300px;
-            height: 300px;
+            left: 100%;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-            color: var(--white);
-            box-shadow: var(--shadow-md);
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            color: var(--primary);
+            box-shadow: 0 10px 30px var(--accent-glow);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 15px 40px var(--accent-glow);
         }
 
         .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            margin-top: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            margin-top: 1rem;
         }
 
         .btn-secondary:hover {
-            background: var(--gray-200);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .btn-sm {
-            padding: 0.625rem 1.25rem;
+            padding: 0.75rem 1.5rem;
             font-size: 0.875rem;
             width: auto;
         }
@@ -224,191 +232,304 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.25rem 1.5rem;
-            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-            border-radius: 1rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             margin-bottom: 2rem;
-            border: 1px solid var(--gray-200);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
         }
 
         .user-name {
             font-weight: 600;
-            color: var(--gray-900);
             font-size: 1.125rem;
         }
 
+        .search-bar {
+            margin-bottom: 2rem;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
         .section-header {
-            color: var(--gray-900);
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
+            margin: 3rem 0 2rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+            animation: slideIn 0.7s ease-out;
+        }
+
+        .section-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px var(--accent-glow));
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.8s ease-out backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .stock-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.25rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .stock-card {
-            background: var(--white);
-            border: 2px solid var(--gray-200);
-            border-radius: 1rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             padding: 1.5rem;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out backwards;
         }
 
         .stock-card::before {
             content: '';
             position: absolute;
-            inset: 0;
-            border-radius: 1rem;
-            padding: 2px;
-            background: linear-gradient(135deg, var(--accent), var(--success));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .stock-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            transition: left 0.6s;
         }
 
         .stock-card:hover::before {
-            opacity: 1;
+            left: 100%;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
 
         .stock-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1.25rem;
+            align-items: flex-start;
             gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .stock-name {
             font-weight: 600;
-            color: var(--gray-900);
-            font-size: 0.9375rem;
-            line-height: 1.4;
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.5;
             flex: 1;
         }
 
         .badge {
-            padding: 0.375rem 0.875rem;
-            border-radius: 9999px;
-            font-size: 0.8125rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
             font-weight: 700;
-            letter-spacing: 0.025em;
+            font-family: 'JetBrains Mono', monospace;
             white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .badge-success {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
+            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
+            color: var(--primary);
         }
 
         .badge-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
+            background: linear-gradient(135deg, var(--warning) 0%, #ffaa00 100%);
+            color: var(--primary);
+            animation: pulse 2s ease-in-out infinite;
         }
 
         .badge-danger {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
+            background: linear-gradient(135deg, var(--danger) 0%, #cc0055 100%);
+            color: white;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
         .qty-controls {
             display: flex;
-            gap: 0.625rem;
+            gap: 0.75rem;
             align-items: center;
         }
 
         .qty-btn {
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 2px solid var(--gray-200);
-            background: var(--white);
-            border-radius: 0.5rem;
+            width: 3rem;
+            height: 3rem;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 700;
-            color: var(--gray-700);
+            color: var(--text-primary);
             transition: all 0.2s;
-            font-size: 1.125rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .qty-btn:hover {
             background: var(--accent);
             border-color: var(--accent);
-            color: var(--white);
-            transform: scale(1.05);
+            color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
         .qty-input {
-            width: 3.5rem;
+            width: 4rem;
             text-align: center;
-            padding: 0.625rem;
-            border: 2px solid var(--gray-200);
-            border-radius: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
             font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .btn-take {
-            background: linear-gradient(135deg, var(--success) 0%, var(--success-hover) 100%);
-            color: var(--white);
-            padding: 0.625rem 1.25rem;
+            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
+            border-radius: 8px;
+            font-weight: 700;
             cursor: pointer;
             flex: 1;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 255, 159, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.875rem;
         }
 
         .btn-take:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 159, 0.5);
         }
 
         .btn-take:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
-            background: var(--gray-300);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
         }
 
         .cart {
             position: sticky;
-            bottom: 1.5rem;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: var(--white);
+            bottom: 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 2px solid var(--accent);
+            color: var(--text-primary);
             padding: 2rem;
-            border-radius: 1.25rem;
-            margin-top: 2.5rem;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-top: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
+            animation: fadeIn 0.5s ease-out;
         }
 
         .cart h3 {
-            font-size: 1.375rem;
-            margin-bottom: 1.25rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--accent);
         }
 
         .cart-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.875rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--card-border);
             align-items: center;
+            animation: slideIn 0.3s ease-out;
         }
 
         .cart-item:last-of-type {
@@ -417,55 +538,60 @@
 
         .cart-item-qty {
             font-weight: 700;
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .btn-validate {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-            color: var(--white);
-            margin-top: 1.25rem;
-            box-shadow: var(--shadow-md);
+            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
+            color: var(--primary);
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 30px var(--accent-glow);
             font-weight: 700;
+            animation: glow 2s ease-in-out infinite;
         }
 
         .btn-validate:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--accent-glow);
         }
 
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
 
         .admin-item {
-            background: var(--gray-50);
-            padding: 1.25rem;
-            border-radius: 0.75rem;
-            border: 2px solid var(--gray-200);
-            transition: all 0.2s;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
         }
 
         .admin-item:hover {
             border-color: var(--accent);
-            background: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px var(--accent-glow);
         }
 
         .admin-item label {
-            font-size: 0.8125rem;
-            margin-bottom: 0.625rem;
-            color: var(--gray-700);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
         }
 
         .table-container {
             overflow-x: auto;
-            margin-top: 1.5rem;
-            border-radius: 1rem;
-            border: 2px solid var(--gray-200);
-            background: var(--white);
+            margin-top: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
         }
 
         table {
@@ -474,21 +600,21 @@
         }
 
         th {
-            background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
-            padding: 1rem 1.25rem;
+            background: rgba(0, 217, 255, 0.1);
+            padding: 1.25rem 1.5rem;
             text-align: left;
             font-weight: 700;
-            color: var(--gray-900);
-            border-bottom: 2px solid var(--gray-200);
-            font-size: 0.8125rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--card-border);
+            font-size: 0.875rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
         }
 
         td {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--gray-200);
-            color: var(--gray-700);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-secondary);
         }
 
         tr:last-child td {
@@ -496,126 +622,218 @@
         }
 
         tr:hover {
-            background: var(--gray-50);
+            background: rgba(0, 217, 255, 0.05);
         }
 
         .hidden {
-            display: none;
+            display: none !important;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--success);
+            color: var(--text-primary);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .notification.success {
+            border-color: var(--success);
+        }
+
+        .notification.error {
+            border-color: var(--danger);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
-            body {
+            .container {
                 padding: 1rem;
             }
 
             .header h1 {
-                font-size: 1.75rem;
+                font-size: 2rem;
             }
 
             .stock-grid {
                 grid-template-columns: 1fr;
             }
 
-            .content {
-                padding: 1.5rem;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
             .user-bar {
                 flex-direction: column;
                 gap: 1rem;
-                align-items: stretch;
             }
 
             .btn-sm {
                 width: 100%;
             }
+
+            .notification {
+                left: 1rem;
+                right: 1rem;
+            }
         }
 
         ::selection {
             background: var(--accent);
-            color: var(--white);
+            color: var(--primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--success), var(--accent));
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-content">
-                <div class="icon">🏥</div>
-                <h1>Gestion Trousse de Soins</h1>
-                <p>Système de suivi en temps réel</p>
+            <div class="logo">🏥</div>
+            <h1>Gestion Trousse de Secours</h1>
+            <p>Système de suivi en temps réel</p>
+        </div>
+
+        <!-- Login User -->
+        <div id="loginPage">
+            <div class="auth-card">
+                <div class="form-group">
+                    <label for="userLocation">📍 Lieu de prise</label>
+                    <input type="text" id="userLocation" placeholder="Ex: Infirmerie, Bureau A, Terrain...">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Se connecter</button>
+                <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
             </div>
         </div>
 
-        <div class="content">
-            <!-- Login User -->
-            <div id="loginPage">
-                <div class="auth-form">
-                    <div class="form-group">
-                        <label for="userLocation">Lieu de prise</label>
-                        <input type="text" id="userLocation" placeholder="Ex: Infirmerie, Bureau A, Terrain...">
-                    </div>
-                    <button class="btn btn-primary" onclick="login()">Se connecter</button>
-                    <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
+        <!-- Login Admin -->
+        <div id="adminLoginPage" class="hidden">
+            <div class="auth-card">
+                <div class="form-group">
+                    <label for="adminPassword">🔐 Mot de passe administrateur</label>
+                    <input type="password" id="adminPassword" placeholder="••••••••">
                 </div>
+                <button class="btn btn-primary" onclick="loginAdmin()">Se connecter</button>
+                <button class="btn btn-secondary" onclick="backToLogin()">Retour</button>
             </div>
+        </div>
 
-            <!-- Login Admin -->
-            <div id="adminLoginPage" class="hidden">
-                <div class="auth-form">
-                    <div class="form-group">
-                        <label for="adminPassword">Mot de passe administrateur</label>
-                        <input type="password" id="adminPassword" placeholder="••••••••">
-                    </div>
-                    <button class="btn btn-primary" onclick="loginAdmin()">Se connecter</button>
-                    <button class="btn btn-secondary" onclick="backToLogin()">Retour</button>
-                </div>
-            </div>
-
-            <!-- User Stock Page -->
-            <div id="stockPage" class="hidden">
-                <div class="user-bar">
+        <!-- User Stock Page -->
+        <div id="stockPage" class="hidden">
+            <div class="user-bar">
+                <div class="user-info">
+                    <div class="user-avatar">📍</div>
                     <div class="user-name" id="currentUser"></div>
-                    <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
                 </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
+            </div>
 
-                <h2 class="section-header"><span>📦</span> Matériel disponible</h2>
-                <div id="stockGrid" class="stock-grid"></div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Rechercher un article..." oninput="filterStock()">
+            </div>
 
-                <div id="cart" class="cart hidden">
-                    <h3>📋 Votre sélection</h3>
-                    <div id="cartItems"></div>
-                    <button class="btn btn-validate" onclick="validateCart()">Valider la prise</button>
+            <h2 class="section-header">
+                <span class="section-icon">📦</span> 
+                Matériel disponible
+            </h2>
+            <div id="stockGrid" class="stock-grid"></div>
+
+            <div id="cart" class="cart hidden">
+                <h3>🛒 Votre sélection</h3>
+                <div id="cartItems"></div>
+                <button class="btn btn-validate" onclick="validateCart()">✓ Valider la prise</button>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="adminPage" class="hidden">
+            <div class="user-bar">
+                <div class="user-info">
+                    <div class="user-avatar">🔐</div>
+                    <div class="user-name">Administrateur</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalItems">0</div>
+                    <div class="stat-label">Articles totaux</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="lowStock">0</div>
+                    <div class="stat-label">Stock faible</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="outOfStock">0</div>
+                    <div class="stat-label">Rupture</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTaken">0</div>
+                    <div class="stat-label">Prises totales</div>
                 </div>
             </div>
 
-            <!-- Admin Page -->
-            <div id="adminPage" class="hidden">
-                <div class="user-bar">
-                    <div class="user-name">🔐 Administrateur</div>
-                    <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
-                </div>
+            <h2 class="section-header">
+                <span class="section-icon">⚙️</span>
+                Gestion des stocks
+            </h2>
+            <div id="adminGrid" class="admin-grid"></div>
+            <button class="btn btn-primary" onclick="updateStocks()" style="max-width: 400px; margin-top: 1.5rem;">
+                💾 Enregistrer les modifications
+            </button>
 
-                <h2 class="section-header"><span>⚙️</span> Gestion des stocks</h2>
-                <div id="adminGrid" class="admin-grid"></div>
-                <button class="btn btn-primary" onclick="updateStocks()" style="max-width: 300px; margin-top: 1rem;">
-                    💾 Enregistrer les modifications
-                </button>
-
-                <h2 class="section-header" style="margin-top: 3rem;"><span>📊</span> Historique des prises</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date & Heure</th>
-                                <th>Lieu</th>
-                                <th>Article</th>
-                                <th>Quantité</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logsTable"></tbody>
-                    </table>
-                </div>
+            <h2 class="section-header" style="margin-top: 4rem;">
+                <span class="section-icon">📊</span>
+                Historique des prises
+            </h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Heure</th>
+                            <th>Lieu</th>
+                            <th>Article</th>
+                            <th>Quantité</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTable"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -638,38 +856,39 @@
         const ADMIN_PASSWORD = 'Congobrazzaville28@';
 
         const initialStock = {
-            "spray_chlorhexidine": { name: "Spray vaporisateur chlorhexidine 50ml", quantity: 2 },
-            "spray_alcool": { name: "Spray vaporisateur alcool 70°", quantity: 1 },
-            "compresses_steriles": { name: "Sachets de 5 compresses non tissées stériles", quantity: 6 },
-            "bandes_nylon": { name: "Bandes nylon extensibles 5cm × 3m", quantity: 4 },
-            "pansements_adhesifs": { name: "Pochettes de 12 pansements adhésifs assortis", quantity: 3 },
-            "pansement_compressif_75": { name: "Pansement compressif 7,5 × 7,5cm", quantity: 1 },
-            "pansement_compressif_10": { name: "Pansement compressif 10 × 10cm", quantity: 1 },
-            "gel_hydroalcoolique": { name: "Doses de 5ml de gel hydroalcoolique", quantity: 4 },
-            "gants_vinyle": { name: "Paires de gants vinyle taille 8/9", quantity: 2 },
-            "ciseaux": { name: "Paire de ciseaux 14cm", quantity: 1 },
-            "pince_echardes": { name: "Pince à échardes", quantity: 1 },
-            "couverture_survie": { name: "Couverture de survie face or/argent 2,20 × 1,40m", quantity: 1 },
-            "bandes_crepe": { name: "Bandes de crêpe 7cm × 4m", quantity: 4 },
-            "sparadrap": { name: "Rouleaux de sparadrap microporeux 5m × 2,5cm", quantity: 2 },
-            "doigtier": { name: "Doigtier en cuir", quantity: 1 },
-            "serviettes_arnica": { name: "Serviettes imprégnées à base d'arnica", quantity: 4 },
-            "serviettes_antibrulure": { name: "Serviettes imprégnées refroidissantes anti-brûlure", quantity: 6 },
-            "serum_physiologique": { name: "Unidoses de 5ml de sérum physiologique stérile", quantity: 2 },
-            "echarpe_triangulaire": { name: "Écharpe triangulaire", quantity: 1 },
-            "livret_conseils": { name: "Livret conseils d'urgence", quantity: 1 },
-            "serviettes_antimoustique": { name: "Serviettes anti-moustique", quantity: 4 },
-            "kit_coton": { name: "Kit coton de 25g", quantity: 1 },
-            "epingles_surete": { name: "Épingles de sûreté", quantity: 12 },
-            "sachets_dasri": { name: "Sachets à déchets de soins DASRI", quantity: 3 },
-            "poches_froid": { name: "Poches de froid instantané", quantity: 2 },
-            "sachet_haip": { name: "Sachet HAIP récupération de membre sectionné", quantity: 1 },
-            "masque_insufflation": { name: "Masque d'insufflation bouche-à-bouche", quantity: 1 }
+            "spray_chlorhexidine": { name: "2 sprays vaporisateurs chlorhexidine 50 ml", quantity: 2 },
+            "spray_alcool": { name: "1 spray vaporisateur alcool 70°", quantity: 1 },
+            "compresses_steriles": { name: "6 sachets de 5 compresses non tissées stériles 5 × 5 cm", quantity: 6 },
+            "bandes_nylon": { name: "4 bandes nylon extensibles 5 cm × 3 m", quantity: 4 },
+            "pansements_adhesifs": { name: "3 pochettes de 12 pansements adhésifs assortis", quantity: 3 },
+            "pansement_compressif_75": { name: "1 pansement compressif 7,5 × 7,5 cm", quantity: 1 },
+            "pansement_compressif_10": { name: "1 pansement compressif 10 × 10 cm", quantity: 1 },
+            "gel_hydroalcoolique": { name: "4 doses de 5 ml de gel hydroalcoolique", quantity: 4 },
+            "gants_vinyle": { name: "2 paires de gants vinyle taille 8/9", quantity: 2 },
+            "ciseaux": { name: "1 paire de ciseaux 14 cm", quantity: 1 },
+            "pince_echardes": { name: "1 pince à échardes", quantity: 1 },
+            "couverture_survie": { name: "1 couverture de survie face or/argent 2,20 × 1,40 m", quantity: 1 },
+            "bandes_crepe": { name: "4 bandes de crêpe 7 cm × 4 m", quantity: 4 },
+            "sparadrap": { name: "2 rouleaux de sparadrap microporeux 5 m × 2,5 cm", quantity: 2 },
+            "doigtier": { name: "1 doigtier en cuir", quantity: 1 },
+            "serviettes_arnica": { name: "4 serviettes imprégnées à base d'arnica", quantity: 4 },
+            "serviettes_antibrulure": { name: "6 serviettes imprégnées refroidissantes anti-brûlure", quantity: 6 },
+            "serum_physiologique": { name: "2 unidoses de 5 ml de sérum physiologique stérile", quantity: 2 },
+            "echarpe_triangulaire": { name: "1 écharpe triangulaire", quantity: 1 },
+            "livret_conseils": { name: "1 livret conseils d'urgence", quantity: 1 },
+            "serviettes_antimoustique": { name: "4 serviettes anti-moustique", quantity: 4 },
+            "kit_coton": { name: "1 kit coton de 25 g", quantity: 1 },
+            "epingles_surete": { name: "12 épingles de sûreté", quantity: 12 },
+            "sachets_dasri": { name: "3 sachets à déchets de soins DASRI", quantity: 3 },
+            "poches_froid": { name: "2 poches de froid instantané", quantity: 2 },
+            "sachet_haip": { name: "1 sachet HAIP récupération de membre sectionné", quantity: 1 },
+            "masque_insufflation": { name: "1 masque d'insufflation bouche-à-bouche", quantity: 1 }
         };
 
         let currentUser = '';
         let isAdmin = false;
         let cart = {};
+        let stockData = {};
 
         async function initStock() {
             for (const [key, value] of Object.entries(initialStock)) {
@@ -685,14 +904,18 @@
             if (adminGrid) adminGrid.innerHTML = '';
 
             const snapshot = await getDocs(collection(db, "stock"));
+            stockData = {};
             
+            let index = 0;
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const id = docSnap.id;
+                stockData[id] = data;
 
                 if (stockGrid) {
                     const card = document.createElement('div');
                     card.className = 'stock-card';
+                    card.style.animationDelay = `${index * 0.05}s`;
                     
                     let badgeClass = 'badge-success';
                     if (data.quantity === 0) badgeClass = 'badge-danger';
@@ -724,8 +947,51 @@
                     `;
                     adminGrid.appendChild(item);
                 }
+
+                index++;
             });
+
+            if (isAdmin) {
+                updateStats();
+            }
         }
+
+        async function updateStats() {
+            let total = 0;
+            let low = 0;
+            let out = 0;
+
+            for (const [id, data] of Object.entries(stockData)) {
+                total += data.quantity;
+                if (data.quantity === 0) out++;
+                else if (data.quantity <= 2) low++;
+            }
+
+            const logsSnapshot = await getDocs(collection(db, "logs"));
+            let totalTaken = 0;
+            logsSnapshot.forEach((doc) => {
+                totalTaken += doc.data().quantity;
+            });
+
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('lowStock').textContent = low;
+            document.getElementById('outOfStock').textContent = out;
+            document.getElementById('totalTaken').textContent = totalTaken;
+        }
+
+        window.filterStock = function() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.stock-card');
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(search)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
 
         onSnapshot(collection(db, "stock"), () => {
             if (!document.getElementById('loginPage').classList.contains('hidden') && 
@@ -752,7 +1018,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${formatted}</td>
-                    <td><strong>${data.location || data.userName || 'N/A'}</strong></td>
+                    <td><strong>${data.location || 'N/A'}</strong></td>
                     <td>${data.itemName}</td>
                     <td><strong>${data.quantity}</strong></td>
                 `;
@@ -767,16 +1033,28 @@
             document.getElementById(pageId).classList.remove('hidden');
         }
 
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
         window.login = function() {
             const location = document.getElementById('userLocation').value.trim();
             if (!location) {
-                alert('Veuillez entrer un lieu');
+                showNotification('⚠️ Veuillez entrer un lieu', 'error');
                 return;
             }
             currentUser = location;
-            document.getElementById('currentUser').textContent = `📍 ${location}`;
+            document.getElementById('currentUser').textContent = location;
             showPage('stockPage');
             loadStock();
+            showNotification(`✓ Connecté en tant que ${location}`);
         };
 
         window.showAdminLogin = () => showPage('adminLoginPage');
@@ -789,8 +1067,9 @@
                 showPage('adminPage');
                 loadStock();
                 loadLogs();
+                showNotification('✓ Connexion administrateur réussie');
             } else {
-                alert('Mot de passe incorrect');
+                showNotification('❌ Mot de passe incorrect', 'error');
             }
         };
 
@@ -801,6 +1080,7 @@
             document.getElementById('userLocation').value = '';
             document.getElementById('adminPassword').value = '';
             showPage('loginPage');
+            showNotification('✓ Déconnexion réussie');
         };
 
         window.changeQty = function(id, delta, max) {
@@ -814,7 +1094,7 @@
         window.addToCart = function(id, name, maxQty) {
             const qty = parseInt(document.getElementById(`qty-${id}`).value);
             if (qty > maxQty) {
-                alert(`Stock insuffisant. Maximum : ${maxQty}`);
+                showNotification(`⚠️ Stock insuffisant. Maximum : ${maxQty}`, 'error');
                 return;
             }
 
@@ -823,6 +1103,7 @@
                 : { name, quantity: qty };
 
             updateCartDisplay();
+            showNotification(`✓ ${qty} ajouté(s) au panier`);
         };
 
         function updateCartDisplay() {
@@ -871,14 +1152,14 @@
                     });
                 }
 
-                alert('✓ Prise enregistrée avec succès !');
+                showNotification('✓ Prise enregistrée avec succès !');
                 cart = {};
                 updateCartDisplay();
                 loadStock();
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Erreur lors de l\'enregistrement');
+                showNotification('❌ Erreur lors de l\'enregistrement', 'error');
             }
         };
 
@@ -892,12 +1173,12 @@
                     await updateDoc(doc(db, "stock", id), { quantity: newQty });
                 }
 
-                alert('✓ Stocks mis à jour avec succès !');
+                showNotification('✓ Stocks mis à jour avec succès !');
                 loadStock();
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Erreur lors de la mise à jour');
+                showNotification('❌ Erreur lors de la mise à jour', 'error');
             }
         };
 

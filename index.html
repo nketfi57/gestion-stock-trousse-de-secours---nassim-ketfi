@@ -500,63 +500,6 @@
             box-shadow: none;
         }
 
-        .cart {
-            position: sticky;
-            bottom: 2rem;
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            border: 2px solid var(--accent);
-            color: var(--text-primary);
-            padding: 2rem;
-            border-radius: 20px;
-            margin-top: 3rem;
-            box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .cart h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--accent);
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--card-border);
-            align-items: center;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .cart-item:last-of-type {
-            border-bottom: none;
-        }
-
-        .cart-item-qty {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .btn-validate {
-            background: linear-gradient(135deg, var(--accent) 0%, #0099cc 100%);
-            color: var(--primary);
-            margin-top: 1.5rem;
-            box-shadow: 0 10px 30px var(--accent-glow);
-            font-weight: 700;
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        .btn-validate:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px var(--accent-glow);
-        }
-
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -892,12 +835,6 @@
                 Matériel disponible
             </h2>
             <div id="stockGrid" class="stock-grid"></div>
-
-            <div id="cart" class="cart hidden">
-                <h3>🛒 Votre sélection</h3>
-                <div id="cartItems"></div>
-                <button class="btn btn-validate" onclick="validateCart()">✓ Valider la prise</button>
-            </div>
         </div>
 
         <!-- Admin Page -->
@@ -1008,8 +945,15 @@
 
         let currentUser = '';
         let isAdmin = false;
-        let cart = {};
         let stockData = {};
+
+        // Variables globales pour le système
+        window.appState = {
+            db: db,
+            currentUser: '',
+            isAdmin: false,
+            stockData: {}
+        };
 
         async function initStock() {
             for (const [key, value] of Object.entries(initialStock)) {
@@ -1026,12 +970,14 @@
 
             const snapshot = await getDocs(collection(db, "stock"));
             stockData = {};
+            window.appState.stockData = {};
             
             let index = 0;
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const id = docSnap.id;
                 stockData[id] = data;
+                window.appState.stockData[id] = data;
 
                 if (stockGrid) {
                     const card = document.createElement('div');
@@ -1051,7 +997,7 @@
                             <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
                             <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${data.quantity}">
                             <button class="qty-btn" onclick="changeQty('${id}', 1, ${data.quantity})">+</button>
-                            <button class="btn-take" onclick="addToCart('${id}', '${data.name}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
+                            <button class="btn-take" onclick="addToCart('${id}', '${escapeHtml(data.name)}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
                                 Prendre
                             </button>
                         </div>
@@ -1075,6 +1021,13 @@
             if (isAdmin) {
                 updateStats();
             }
+        }
+
+        // Fonction pour échapper le HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         async function updateStats() {
@@ -1172,6 +1125,7 @@
                 return;
             }
             currentUser = location;
+            window.appState.currentUser = location;
             document.getElementById('currentUser').textContent = location;
             showPage('stockPage');
             loadStock();
@@ -1185,6 +1139,7 @@
             const pwd = document.getElementById('adminPassword').value;
             if (pwd === ADMIN_PASSWORD) {
                 isAdmin = true;
+                window.appState.isAdmin = true;
                 showPage('adminPage');
                 loadStock();
                 loadLogs();
@@ -1197,7 +1152,8 @@
         window.logout = function() {
             currentUser = '';
             isAdmin = false;
-            cart = {};
+            window.appState.currentUser = '';
+            window.appState.isAdmin = false;
             document.getElementById('userLocation').value = '';
             document.getElementById('adminPassword').value = '';
             showPage('loginPage');
@@ -1206,20 +1162,28 @@
 
         window.changeQty = function(id, delta, max) {
             const input = document.getElementById(`qty-${id}`);
-            let val = parseInt(input.value) + delta;
+            if (!input) return;
+            
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            
             if (max !== undefined) val = Math.min(val, max);
             val = Math.max(1, val);
+            
             input.value = val;
         };
 
         window.addToCart = function(id, name, maxQty) {
-            const qty = parseInt(document.getElementById(`qty-${id}`).value);
+            const input = document.getElementById(`qty-${id}`);
+            if (!input) return;
+            
+            const qty = parseInt(input.value) || 1;
+            
             if (qty > maxQty) {
                 showNotification(`⚠️ Stock insuffisant. Maximum : ${maxQty}`, 'error');
                 return;
             }
 
-            // Afficher le modal de confirmation
             showConfirmationModal(id, name, qty);
         };
 
@@ -1242,7 +1206,7 @@
                     <div class="modal-content">
                         <div class="modal-info">
                             <span class="modal-label">📍 Lieu</span>
-                            <span class="modal-value">${currentUser}</span>
+                            <span class="modal-value">${escapeHtml(currentUser)}</span>
                         </div>
                         <div class="modal-info">
                             <span class="modal-label">📅 Date</span>
@@ -1254,7 +1218,7 @@
                         </div>
                         <div class="modal-info">
                             <span class="modal-label">📋 Article</span>
-                            <span class="modal-value">${name}</span>
+                            <span class="modal-value">${escapeHtml(name)}</span>
                         </div>
                         <div class="modal-info">
                             <span class="modal-label">🔢 Quantité</span>
@@ -1263,11 +1227,15 @@
                     </div>
                     <div class="modal-buttons">
                         <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-                        <button class="btn-confirm" onclick="confirmTake('${id}', '${name.replace(/'/g, "\\'")}', ${qty})">Confirmer</button>
+                        <button class="btn-confirm" id="confirmBtn-${id}">Confirmer</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
+
+            // Ajouter l'événement de confirmation
+            const confirmBtn = document.getElementById(`confirmBtn-${id}`);
+            confirmBtn.addEventListener('click', () => confirmTake(id, name, qty));
 
             // Fermer en cliquant sur l'overlay
             modal.addEventListener('click', (e) => {
@@ -1284,19 +1252,24 @@
             }
         };
 
-        window.confirmTake = async function(id, name, qty) {
+        async function confirmTake(id, name, qty) {
             closeModal();
 
             try {
                 const timestamp = new Date();
                 
                 // Récupérer la quantité actuelle
-                const stockDoc = await getDocs(collection(db, "stock"));
+                const stockSnapshot = await getDocs(collection(db, "stock"));
                 let currentQty = 0;
                 
-                stockDoc.forEach((d) => {
+                stockSnapshot.forEach((d) => {
                     if (d.id === id) currentQty = d.data().quantity;
                 });
+
+                if (currentQty < qty) {
+                    showNotification('❌ Stock insuffisant', 'error');
+                    return;
+                }
 
                 // Mettre à jour le stock
                 await updateDoc(doc(db, "stock", id), {
@@ -1323,15 +1296,7 @@
                 console.error('Error:', error);
                 showNotification('❌ Erreur lors de l\'enregistrement', 'error');
             }
-        };
-
-        function updateCartDisplay() {
-            // Fonction conservée pour compatibilité mais non utilisée
         }
-
-        window.validateCart = async function() {
-            // Fonction conservée pour compatibilité mais non utilisée
-        };
 
         window.updateStocks = async function() {
             try {
@@ -1339,8 +1304,11 @@
                 
                 for (const docSnap of snapshot.docs) {
                     const id = docSnap.id;
-                    const newQty = parseInt(document.getElementById(`admin-${id}`).value);
-                    await updateDoc(doc(db, "stock", id), { quantity: newQty });
+                    const input = document.getElementById(`admin-${id}`);
+                    if (input) {
+                        const newQty = parseInt(input.value) || 0;
+                        await updateDoc(doc(db, "stock", id), { quantity: newQty });
+                    }
                 }
 
                 showNotification('✓ Stocks mis à jour avec succès !');
@@ -1352,6 +1320,7 @@
             }
         };
 
+        // Initialiser le stock au chargement
         initStock();
     </script>
 </body>

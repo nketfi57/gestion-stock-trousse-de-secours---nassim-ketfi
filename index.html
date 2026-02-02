@@ -52,11 +52,6 @@
             50% { transform: scale(1.05); }
         }
 
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-
         body {
             font-family: 'Space Grotesk', -apple-system, sans-serif;
             background: var(--bg-gradient);
@@ -620,6 +615,37 @@
             display: block;
         }
 
+        /* Debug console */
+        .debug-console {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 400px;
+            max-height: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--success);
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+        }
+
+        .debug-console.active {
+            display: block;
+        }
+
+        .debug-console .error {
+            color: var(--danger);
+        }
+
+        .debug-console .warning {
+            color: var(--warning);
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2.5rem;
@@ -637,6 +663,11 @@
                 top: 1rem;
                 right: 1rem;
                 left: 1rem;
+            }
+
+            .debug-console {
+                width: calc(100% - 40px);
+                bottom: 80px;
             }
         }
 
@@ -683,21 +714,12 @@
             color: var(--text-secondary);
             font-style: italic;
         }
-
-        @media (max-width: 768px) {
-            .credits-footer {
-                font-size: 0.75rem;
-                padding: 0.75rem 1rem;
-            }
-            
-            .credits-content {
-                flex-direction: column;
-                gap: 0.25rem;
-            }
-        }
     </style>
 </head>
 <body>
+    <!-- Debug Console -->
+    <div id="debugConsole" class="debug-console"></div>
+
     <!-- Page de connexion -->
     <div id="loginPage" class="page active">
         <div class="header">
@@ -717,6 +739,7 @@
             </div>
             <button class="btn btn-primary" onclick="login()">Se Connecter</button>
             <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
+            <button class="btn btn-secondary" onclick="toggleDebug()" style="margin-top: 1rem;">🐛 Toggle Debug</button>
         </div>
     </div>
 
@@ -840,28 +863,88 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase et logique -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyBJuiuuCUyUJ7HVLLvqSBHw4TpfEd73I",
-            authDomain: "trousse-de-secours.firebaseapp.com",
-            projectId: "trousse-de-secours",
-            storageBucket: "trousse-de-secours.firebasestorage.app",
-            messagingSenderId: "1072085730538",
-            appId: "1:1072085730538:web:4e0a086f2c73bdd6f05bf5"
+        // ============================================
+        // SYSTÈME DE DEBUG
+        // ============================================
+        const debugLog = (message, type = 'info') => {
+            const console_elem = document.getElementById('debugConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+            console_elem.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            console_elem.scrollTop = console_elem.scrollHeight;
+            
+            // Log aussi dans la vraie console
+            if (type === 'error') console.error(message);
+            else if (type === 'warning') console.warn(message);
+            else console.log(message);
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        window.toggleDebug = () => {
+            document.getElementById('debugConsole').classList.toggle('active');
+        };
+
+        debugLog('🚀 Démarrage de l\'application MediStock');
+
+        // ============================================
+        // IMPORT FIREBASE (VERSION 11.1.0)
+        // ============================================
+        let db, getDocs, addDoc, updateDoc, doc, collection, serverTimestamp, query, orderBy, limit;
+        
+        try {
+            debugLog('📦 Import des modules Firebase...');
+            
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js');
+            const firestoreModule = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
+            
+            getDocs = firestoreModule.getDocs;
+            addDoc = firestoreModule.addDoc;
+            updateDoc = firestoreModule.updateDoc;
+            doc = firestoreModule.doc;
+            collection = firestoreModule.collection;
+            serverTimestamp = firestoreModule.serverTimestamp;
+            query = firestoreModule.query;
+            orderBy = firestoreModule.orderBy;
+            limit = firestoreModule.limit;
+            const { getFirestore } = firestoreModule;
+
+            debugLog('✓ Modules Firebase importés avec succès');
+
+            // ============================================
+            // CONFIGURATION FIREBASE
+            // ============================================
+            const firebaseConfig = {
+                apiKey: "AIzaSyAyBJuiuuCUyUJ7HVLLvqSBHw4TpfEd73I",
+                authDomain: "trousse-de-secours.firebaseapp.com",
+                projectId: "trousse-de-secours",
+                storageBucket: "trousse-de-secours.firebasestorage.app",
+                messagingSenderId: "1072085730538",
+                appId: "1:1072085730538:web:4e0a086f2c73bdd6f05bf5"
+            };
+
+            debugLog('🔧 Initialisation de Firebase...');
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            debugLog('✓ Firebase initialisé avec succès');
+            debugLog(`📊 Projet: ${firebaseConfig.projectId}`);
+
+        } catch (error) {
+            debugLog(`❌ ERREUR CRITIQUE lors de l'import Firebase: ${error.message}`, 'error');
+            debugLog(`Stack: ${error.stack}`, 'error');
+            alert('Erreur lors du chargement de Firebase. Consultez la console de debug.');
+        }
 
         // ============================================
         // CONFIGURATION EMAILJS
         // ============================================
-        emailjs.init('53VGIxYALR_QqLjgx');
+        try {
+            debugLog('📧 Configuration EmailJS...');
+            emailjs.init('53VGIxYALR_QqLjgx');
+            debugLog('✓ EmailJS configuré');
+        } catch (error) {
+            debugLog(`⚠️ Erreur EmailJS: ${error.message}`, 'warning');
+        }
 
         const EMAILJS_SERVICE_ID = 'service_u3a8a6y';
         const EMAILJS_TEMPLATE_ID = 'template_x7guvce';
@@ -872,7 +955,7 @@
         // ============================================
         async function sendEmailNotification(itemData) {
             try {
-                // Envoyer à chaque email
+                debugLog('📧 Envoi des notifications email...');
                 for (const email of ADMIN_EMAILS) {
                     const templateParams = {
                         to_email: email,
@@ -883,27 +966,24 @@
                         time: itemData.time
                     };
 
-                    await emailjs.send(
-                        EMAILJS_SERVICE_ID,
-                        EMAILJS_TEMPLATE_ID,
-                        templateParams
-                    );
-                    console.log(`✓ Email envoyé à ${email}`);
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+                    debugLog(`✓ Email envoyé à ${email}`);
                 }
-
                 return true;
             } catch (error) {
-                console.error('❌ Erreur envoi email:', error);
-                // On ne bloque pas le processus même si l'email échoue
+                debugLog(`❌ Erreur envoi email: ${error.message}`, 'error');
                 return false;
             }
         }
 
-        // Variables globales
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
         const ADMIN_PASSWORD = "admin123";
         let currentUser = '';
         let isAdmin = false;
 
+        // Rendre les fonctions accessibles globalement
         window.db = db;
         window.getDocs = getDocs;
         window.addDoc = addDoc;
@@ -915,7 +995,9 @@
         window.orderBy = orderBy;
         window.limit = limit;
 
-        // Initialiser le stock
+        // ============================================
+        // INITIALISATION DU STOCK
+        // ============================================
         async function initStock() {
             const stockData = [
                 { name: "Pansements", icon: "🩹", quantity: 50 },
@@ -929,23 +1011,34 @@
             ];
 
             try {
+                debugLog('📦 Vérification du stock dans Firestore...');
                 const snapshot = await getDocs(collection(db, "stock"));
+                
                 if (snapshot.empty) {
-                    console.log("Initialisation du stock...");
+                    debugLog('⚠️ Stock vide, initialisation...');
                     for (const item of stockData) {
-                        await addDoc(collection(db, "stock"), item);
+                        const docRef = await addDoc(collection(db, "stock"), item);
+                        debugLog(`✓ Article ajouté: ${item.name} (ID: ${docRef.id})`);
                     }
-                    console.log("✓ Stock initialisé");
+                    debugLog('✓ Stock initialisé avec succès');
+                } else {
+                    debugLog(`✓ Stock existant trouvé (${snapshot.size} articles)`);
                 }
             } catch (error) {
-                console.error("Erreur init:", error);
+                debugLog(`❌ ERREUR lors de l'initialisation du stock: ${error.message}`, 'error');
+                debugLog(`Code: ${error.code}`, 'error');
+                throw error;
             }
         }
 
-        // Charger le stock
+        // ============================================
+        // CHARGEMENT DU STOCK
+        // ============================================
         async function loadStock() {
             try {
+                debugLog('📥 Chargement du stock...');
                 const snapshot = await getDocs(collection(db, "stock"));
+                debugLog(`✓ ${snapshot.size} articles récupérés`);
                 
                 const stockHTML = [];
                 const adminHTML = [];
@@ -1002,15 +1095,20 @@
 
                 document.getElementById('stockList').innerHTML = stockHTML.join('');
                 document.getElementById('adminStockList').innerHTML = adminHTML.join('');
+                debugLog('✓ Interface stock mise à jour');
 
             } catch (error) {
-                console.error('Erreur chargement stock:', error);
+                debugLog(`❌ Erreur chargement stock: ${error.message}`, 'error');
+                showNotification('❌ Erreur lors du chargement du stock', 'error');
             }
         }
 
-        // Charger les logs
+        // ============================================
+        // CHARGEMENT DES LOGS
+        // ============================================
         async function loadLogs() {
             try {
+                debugLog('📋 Chargement de l\'historique...');
                 const q = query(
                     collection(db, "logs"),
                     orderBy("timestamp", "desc"),
@@ -1018,6 +1116,7 @@
                 );
                 
                 const snapshot = await getDocs(q);
+                debugLog(`✓ ${snapshot.size} logs récupérés`);
                 
                 const rows = [];
                 snapshot.forEach((docSnap) => {
@@ -1038,15 +1137,19 @@
 
                 document.getElementById('logsTableBody').innerHTML = rows.join('');
                 document.getElementById('totalLogs').textContent = snapshot.size;
+                debugLog('✓ Historique affiché');
 
             } catch (error) {
-                console.error('Erreur logs:', error);
+                debugLog(`❌ Erreur chargement logs: ${error.message}`, 'error');
             }
         }
 
-        // Mettre à jour les stats
+        // ============================================
+        // MISE À JOUR DES STATISTIQUES
+        // ============================================
         async function updateStats() {
             try {
+                debugLog('📊 Mise à jour des statistiques...');
                 const stockSnapshot = await getDocs(collection(db, "stock"));
                 let totalStock = 0;
                 stockSnapshot.forEach(doc => {
@@ -1055,8 +1158,9 @@
                 
                 document.getElementById('totalItems').textContent = stockSnapshot.size;
                 document.getElementById('totalStock').textContent = totalStock;
+                debugLog(`✓ Stats: ${stockSnapshot.size} articles, ${totalStock} unités`);
             } catch (error) {
-                console.error('Erreur stats:', error);
+                debugLog(`❌ Erreur stats: ${error.message}`, 'error');
             }
         }
 
@@ -1064,23 +1168,25 @@
         window.loadLogs = loadLogs;
         window.updateStats = updateStats;
 
-        // Échapper HTML
+        // ============================================
+        // UTILITAIRES
+        // ============================================
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Afficher une page
         function showPage(pageId) {
+            debugLog(`📄 Changement de page: ${pageId}`);
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
         }
 
         window.showPage = showPage;
 
-        // Notification
         function showNotification(message, type = 'success') {
+            debugLog(`📣 Notification: ${message} (${type})`);
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -1091,7 +1197,9 @@
             }, 3000);
         }
 
-        // Connexion utilisateur
+        // ============================================
+        // AUTHENTIFICATION
+        // ============================================
         window.login = function() {
             const location = document.getElementById('userLocation').value.trim();
             if (!location) {
@@ -1103,12 +1211,12 @@
             showPage('stockPage');
             loadStock();
             showNotification(`✓ Connecté en tant que ${location}`);
+            debugLog(`👤 Utilisateur connecté: ${location}`);
         };
 
         window.showAdminLogin = () => showPage('adminLoginPage');
         window.backToLogin = () => showPage('loginPage');
 
-        // Connexion admin
         window.loginAdmin = function() {
             const pwd = document.getElementById('adminPassword').value;
             if (pwd === ADMIN_PASSWORD) {
@@ -1116,14 +1224,17 @@
                 showPage('adminPage');
                 loadStock();
                 loadLogs();
+                updateStats();
                 showNotification('✓ Connexion administrateur réussie');
+                debugLog('🔐 Admin connecté');
             } else {
                 showNotification('❌ Mot de passe incorrect', 'error');
+                debugLog('❌ Échec connexion admin', 'error');
             }
         };
 
-        // Déconnexion
         window.logout = function() {
+            debugLog('👋 Déconnexion');
             currentUser = '';
             isAdmin = false;
             document.getElementById('userLocation').value = '';
@@ -1132,7 +1243,9 @@
             showNotification('✓ Déconnexion réussie');
         };
 
-        // Changer la quantité
+        // ============================================
+        // GESTION DES QUANTITÉS
+        // ============================================
         window.changeQty = function(id, delta, max) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
@@ -1146,7 +1259,6 @@
             input.value = val;
         };
 
-        // Prendre un article
         window.takeItem = function(id, name, maxQty) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
@@ -1161,7 +1273,9 @@
             showConfirmationModal(id, name, qty);
         };
 
-        // Afficher la modale de confirmation
+        // ============================================
+        // MODALE DE CONFIRMATION
+        // ============================================
         function showConfirmationModal(id, name, qty) {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('fr-FR', { 
@@ -1215,7 +1329,6 @@
             });
         }
 
-        // Fermer la modale
         window.closeModal = function() {
             const modal = document.querySelector('.modal-overlay');
             if (modal) {
@@ -1223,12 +1336,14 @@
             }
         };
 
-        // Confirmer la prise (MODIFIÉ POUR ENVOYER L'EMAIL)
+        // ============================================
+        // CONFIRMATION DE PRISE (AVEC EMAIL)
+        // ============================================
         window.confirmTake = async function(id, name, qty) {
             closeModal();
 
             try {
-                console.log("Début de la prise:", { id, name, qty, user: currentUser });
+                debugLog(`📦 Début prise: ${qty}x ${name} par ${currentUser}`);
 
                 // Vérifier le stock actuel
                 const stockDoc = await getDocs(collection(db, "stock"));
@@ -1243,11 +1358,13 @@
                 });
 
                 if (!itemFound) {
+                    debugLog('❌ Article non trouvé', 'error');
                     showNotification('❌ Article non trouvé', 'error');
                     return;
                 }
 
                 if (currentQty < qty) {
+                    debugLog(`❌ Stock insuffisant: ${currentQty} < ${qty}`, 'error');
                     showNotification(`❌ Stock insuffisant. Disponible : ${currentQty}`, 'error');
                     return;
                 }
@@ -1257,10 +1374,9 @@
                 await updateDoc(doc(db, "stock", id), {
                     quantity: newQty
                 });
+                debugLog(`✓ Stock mis à jour: ${currentQty} → ${newQty}`);
 
-                console.log("✓ Stock mis à jour:", currentQty, "→", newQty);
-
-                // Ajouter dans l'historique avec serverTimestamp
+                // Ajouter dans l'historique
                 const logData = {
                     location: currentUser,
                     itemName: name,
@@ -1269,11 +1385,9 @@
                 };
 
                 const logRef = await addDoc(collection(db, "logs"), logData);
-                console.log("✓ Log ajouté avec ID:", logRef.id);
+                debugLog(`✓ Log enregistré (ID: ${logRef.id})`);
 
-                // ============================================
-                // 📧 ENVOI DE L'EMAIL AUTOMATIQUE
-                // ============================================
+                // Envoi email
                 const now = new Date();
                 const emailData = {
                     location: currentUser,
@@ -1288,10 +1402,9 @@
                     time: now.toLocaleTimeString('fr-FR')
                 };
 
-                // Envoyer l'email (en arrière-plan, ne bloque pas l'UX)
                 sendEmailNotification(emailData).then(success => {
                     if (success) {
-                        console.log('📧 Email de notification envoyé');
+                        debugLog('📧 Email de notification envoyé');
                     }
                 });
 
@@ -1305,14 +1418,18 @@
                 }
 
             } catch (error) {
-                console.error('❌ Erreur complète:', error);
+                debugLog(`❌ ERREUR lors de la prise: ${error.message}`, 'error');
+                debugLog(`Code: ${error.code}`, 'error');
                 showNotification('❌ Erreur lors de l\'enregistrement: ' + error.message, 'error');
             }
         };
 
-        // Mettre à jour les stocks (admin)
+        // ============================================
+        // MISE À JOUR STOCKS ADMIN
+        // ============================================
         window.updateStocks = async function() {
             try {
+                debugLog('💾 Mise à jour des stocks par admin...');
                 const snapshot = await getDocs(collection(db, "stock"));
                 
                 let updated = 0;
@@ -1323,24 +1440,36 @@
                         const newQty = parseInt(input.value) || 0;
                         await updateDoc(doc(db, "stock", id), { quantity: newQty });
                         updated++;
+                        debugLog(`✓ ${docSnap.data().name}: ${newQty}`);
                     }
                 }
 
                 showNotification(`✓ ${updated} articles mis à jour avec succès !`);
+                debugLog(`✓ Mise à jour terminée: ${updated} articles`);
                 await loadStock();
                 await updateStats();
 
             } catch (error) {
-                console.error('Erreur:', error);
+                debugLog(`❌ Erreur mise à jour: ${error.message}`, 'error');
                 showNotification('❌ Erreur lors de la mise à jour', 'error');
             }
         };
 
-        // Initialiser au chargement
+        // ============================================
+        // DÉMARRAGE APPLICATION
+        // ============================================
         console.log("🚀 Démarrage de l'application...");
-        initStock().then(() => {
-            console.log("✓ Application prête");
-        });
+        debugLog('🚀 Application MediStock v2.0');
+        
+        initStock()
+            .then(() => {
+                debugLog('✅ Application prête à l\'utilisation');
+                console.log("✓ Application prête");
+            })
+            .catch(error => {
+                debugLog(`❌ ERREUR FATALE: ${error.message}`, 'error');
+                alert('Erreur lors du démarrage. Consultez la console de debug (bouton 🐛).');
+            });
     </script>
 </body>
 </html>

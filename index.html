@@ -719,6 +719,126 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, var(--success), var(--accent));
         }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 30px 80px rgba(0, 217, 255, 0.4);
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .modal-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .modal-info:last-child {
+            border-bottom: none;
+        }
+
+        .modal-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
+            color: var(--primary);
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 255, 159, 0.5);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -801,7 +921,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="outOfStock">0</div>
-                    <div class="stat-label">Rupture</div>
+                    <div class="stat-label">Stock épuisé</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="totalTaken">0</div>
@@ -856,33 +976,34 @@
         const ADMIN_PASSWORD = 'Congobrazzaville28@';
 
         const initialStock = {
-            "spray_chlorhexidine": { name: "2 sprays vaporisateurs chlorhexidine 50 ml", quantity: 2 },
-            "spray_alcool": { name: "1 spray vaporisateur alcool 70°", quantity: 1 },
-            "compresses_steriles": { name: "6 sachets de 5 compresses non tissées stériles 5 × 5 cm", quantity: 6 },
-            "bandes_nylon": { name: "4 bandes nylon extensibles 5 cm × 3 m", quantity: 4 },
-            "pansements_adhesifs": { name: "3 pochettes de 12 pansements adhésifs assortis", quantity: 3 },
-            "pansement_compressif_75": { name: "1 pansement compressif 7,5 × 7,5 cm", quantity: 1 },
-            "pansement_compressif_10": { name: "1 pansement compressif 10 × 10 cm", quantity: 1 },
-            "gel_hydroalcoolique": { name: "4 doses de 5 ml de gel hydroalcoolique", quantity: 4 },
-            "gants_vinyle": { name: "2 paires de gants vinyle taille 8/9", quantity: 2 },
-            "ciseaux": { name: "1 paire de ciseaux 14 cm", quantity: 1 },
-            "pince_echardes": { name: "1 pince à échardes", quantity: 1 },
-            "couverture_survie": { name: "1 couverture de survie face or/argent 2,20 × 1,40 m", quantity: 1 },
-            "bandes_crepe": { name: "4 bandes de crêpe 7 cm × 4 m", quantity: 4 },
-            "sparadrap": { name: "2 rouleaux de sparadrap microporeux 5 m × 2,5 cm", quantity: 2 },
-            "doigtier": { name: "1 doigtier en cuir", quantity: 1 },
-            "serviettes_arnica": { name: "4 serviettes imprégnées à base d'arnica", quantity: 4 },
-            "serviettes_antibrulure": { name: "6 serviettes imprégnées refroidissantes anti-brûlure", quantity: 6 },
-            "serum_physiologique": { name: "2 unidoses de 5 ml de sérum physiologique stérile", quantity: 2 },
-            "echarpe_triangulaire": { name: "1 écharpe triangulaire", quantity: 1 },
-            "livret_conseils": { name: "1 livret conseils d'urgence", quantity: 1 },
-            "serviettes_antimoustique": { name: "4 serviettes anti-moustique", quantity: 4 },
-            "kit_coton": { name: "1 kit coton de 25 g", quantity: 1 },
-            "epingles_surete": { name: "12 épingles de sûreté", quantity: 12 },
-            "sachets_dasri": { name: "3 sachets à déchets de soins DASRI", quantity: 3 },
-            "poches_froid": { name: "2 poches de froid instantané", quantity: 2 },
-            "sachet_haip": { name: "1 sachet HAIP récupération de membre sectionné", quantity: 1 },
-            "masque_insufflation": { name: "1 masque d'insufflation bouche-à-bouche", quantity: 1 }
+            "spray_chlorhexidine_1": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
+            "spray_chlorhexidine_2": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
+            "spray_alcool": { name: "Spray vaporisateur alcool 70°", quantity: 1 },
+            "compresses_steriles": { name: "Sachets de 5 compresses non tissées stériles 5 × 5 cm", quantity: 6 },
+            "bandes_nylon": { name: "Bandes nylon extensibles 5 cm × 3 m", quantity: 4 },
+            "pansements_adhesifs": { name: "Pochettes de 12 pansements adhésifs assortis", quantity: 3 },
+            "pansement_compressif_75": { name: "Pansement compressif 7,5 × 7,5 cm", quantity: 1 },
+            "pansement_compressif_10": { name: "Pansement compressif 10 × 10 cm", quantity: 1 },
+            "gel_hydroalcoolique": { name: "Doses de 5 ml de gel hydroalcoolique", quantity: 4 },
+            "gants_vinyle": { name: "Paires de gants vinyle taille 8/9", quantity: 2 },
+            "ciseaux": { name: "Paire de ciseaux 14 cm", quantity: 1 },
+            "pince_echardes": { name: "Pince à échardes", quantity: 1 },
+            "couverture_survie": { name: "Couverture de survie face or/argent 2,20 × 1,40 m", quantity: 1 },
+            "bandes_crepe": { name: "Bandes de crêpe 7 cm × 4 m", quantity: 4 },
+            "sparadrap": { name: "Rouleaux de sparadrap microporeux 5 m × 2,5 cm", quantity: 2 },
+            "doigtier": { name: "Doigtier en cuir", quantity: 1 },
+            "serviettes_arnica": { name: "Serviettes imprégnées à base d'arnica", quantity: 4 },
+            "serviettes_antibrulure": { name: "Serviettes imprégnées refroidissantes anti-brûlure", quantity: 6 },
+            "serum_physiologique": { name: "Unidoses de 5 ml de sérum physiologique stérile", quantity: 2 },
+            "echarpe_triangulaire": { name: "Écharpe triangulaire", quantity: 1 },
+            "livret_conseils": { name: "Livret conseils d'urgence", quantity: 1 },
+            "serviettes_antimoustique": { name: "Serviettes anti-moustique", quantity: 4 },
+            "kit_coton": { name: "Kit coton de 25 g", quantity: 1 },
+            "epingles_surete": { name: "Épingles de sûreté", quantity: 12 },
+            "sachets_dasri": { name: "Sachets à déchets de soins DASRI", quantity: 3 },
+            "poches_froid": { name: "Poches de froid instantané", quantity: 2 },
+            "sachet_haip": { name: "Sachet HAIP récupération de membre sectionné", quantity: 1 },
+            "masque_insufflation": { name: "Masque d'insufflation bouche-à-bouche", quantity: 1 }
         };
 
         let currentUser = '';
@@ -1098,69 +1219,118 @@
                 return;
             }
 
-            cart[id] = cart[id] 
-                ? { name, quantity: cart[id].quantity + qty }
-                : { name, quantity: qty };
-
-            updateCartDisplay();
-            showNotification(`✓ ${qty} ajouté(s) au panier`);
+            // Afficher le modal de confirmation
+            showConfirmationModal(id, name, qty);
         };
 
-        function updateCartDisplay() {
-            const cartDiv = document.getElementById('cart');
-            const cartItems = document.getElementById('cartItems');
+        function showConfirmationModal(id, name, qty) {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const formattedTime = now.toLocaleTimeString('fr-FR');
 
-            if (Object.keys(cart).length === 0) {
-                cartDiv.classList.add('hidden');
-                return;
-            }
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-icon">📦</div>
+                    <h2 class="modal-title">Confirmer la prise</h2>
+                    <div class="modal-content">
+                        <div class="modal-info">
+                            <span class="modal-label">📍 Lieu</span>
+                            <span class="modal-value">${currentUser}</span>
+                        </div>
+                        <div class="modal-info">
+                            <span class="modal-label">📅 Date</span>
+                            <span class="modal-value">${formattedDate}</span>
+                        </div>
+                        <div class="modal-info">
+                            <span class="modal-label">🕐 Heure</span>
+                            <span class="modal-value">${formattedTime}</span>
+                        </div>
+                        <div class="modal-info">
+                            <span class="modal-label">📋 Article</span>
+                            <span class="modal-value">${name}</span>
+                        </div>
+                        <div class="modal-info">
+                            <span class="modal-label">🔢 Quantité</span>
+                            <span class="modal-value">${qty}</span>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                        <button class="btn-confirm" onclick="confirmTake('${id}', '${name.replace(/'/g, "\\'")}', ${qty})">Confirmer</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
 
-            cartDiv.classList.remove('hidden');
-            cartItems.innerHTML = '';
-
-            for (const [id, item] of Object.entries(cart)) {
-                const div = document.createElement('div');
-                div.className = 'cart-item';
-                div.innerHTML = `<span>${item.name}</span><span class="cart-item-qty">× ${item.quantity}</span>`;
-                cartItems.appendChild(div);
-            }
+            // Fermer en cliquant sur l'overlay
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
         }
 
-        window.validateCart = async function() {
-            if (Object.keys(cart).length === 0) return;
+        window.closeModal = function() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.remove();
+            }
+        };
+
+        window.confirmTake = async function(id, name, qty) {
+            closeModal();
 
             try {
                 const timestamp = new Date();
+                
+                // Récupérer la quantité actuelle
+                const stockDoc = await getDocs(collection(db, "stock"));
+                let currentQty = 0;
+                
+                stockDoc.forEach((d) => {
+                    if (d.id === id) currentQty = d.data().quantity;
+                });
 
-                for (const [id, item] of Object.entries(cart)) {
-                    const stockDoc = await getDocs(collection(db, "stock"));
-                    let currentQty = 0;
-                    
-                    stockDoc.forEach((d) => {
-                        if (d.id === id) currentQty = d.data().quantity;
-                    });
+                // Mettre à jour le stock
+                await updateDoc(doc(db, "stock", id), {
+                    quantity: currentQty - qty
+                });
 
-                    await updateDoc(doc(db, "stock", id), {
-                        quantity: currentQty - item.quantity
-                    });
+                // Ajouter dans l'historique
+                await addDoc(collection(db, "logs"), {
+                    location: currentUser,
+                    itemName: name,
+                    quantity: qty,
+                    timestamp: timestamp
+                });
 
-                    await addDoc(collection(db, "logs"), {
-                        location: currentUser,
-                        itemName: item.name,
-                        quantity: item.quantity,
-                        timestamp: timestamp
-                    });
-                }
-
-                showNotification('✓ Prise enregistrée avec succès !');
-                cart = {};
-                updateCartDisplay();
+                showNotification(`✓ ${qty} ${name} pris avec succès !`);
                 loadStock();
+                
+                // Mettre à jour les stats admin si on est admin
+                if (isAdmin) {
+                    updateStats();
+                }
 
             } catch (error) {
                 console.error('Error:', error);
                 showNotification('❌ Erreur lors de l\'enregistrement', 'error');
             }
+        };
+
+        function updateCartDisplay() {
+            // Fonction conservée pour compatibilité mais non utilisée
+        }
+
+        window.validateCart = async function() {
+            // Fonction conservée pour compatibilité mais non utilisée
         };
 
         window.updateStocks = async function() {

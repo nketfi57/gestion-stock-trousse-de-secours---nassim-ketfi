@@ -740,6 +740,7 @@
             <button class="btn btn-primary" onclick="login()">Se Connecter</button>
             <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
             <button class="btn btn-secondary" onclick="toggleDebug()" style="margin-top: 1rem;">🐛 Toggle Debug</button>
+            <button class="btn btn-secondary" onclick="resetStockDatabase()" style="margin-top: 1rem; background: #ff6b6b;">🔄 Réinitialiser le Stock</button>
         </div>
     </div>
 
@@ -979,7 +980,7 @@
         // ============================================
         // VARIABLES GLOBALES
         // ============================================
-        const ADMIN_PASSWORD = "admin123";
+        const ADMIN_PASSWORD = "Congobrazzaville28";
         let currentUser = '';
         let isAdmin = false;
 
@@ -996,18 +997,123 @@
         window.limit = limit;
 
         // ============================================
+        // RÉINITIALISATION COMPLÈTE DU STOCK
+        // ============================================
+        window.resetStockDatabase = async function() {
+            // Demander le mot de passe
+            const password = prompt('🔐 Entrez le mot de passe administrateur pour réinitialiser le stock :');
+            
+            if (!password) {
+                debugLog('❌ Réinitialisation annulée', 'warning');
+                return;
+            }
+            
+            if (password !== 'Congobrazzaville28') {
+                showNotification('❌ Mot de passe incorrect', 'error');
+                debugLog('❌ Tentative de réinitialisation avec mauvais mot de passe', 'error');
+                return;
+            }
+            
+            if (!confirm('⚠️ ATTENTION : Cela va SUPPRIMER tout le stock actuel et le remplacer par le stock initial.\n\nÊtes-vous sûr de vouloir continuer ?')) {
+                return;
+            }
+
+            try {
+                debugLog('🔄 Début de la réinitialisation du stock...');
+                
+                // 1. Supprimer tous les documents existants
+                const snapshot = await getDocs(collection(db, "stock"));
+                debugLog(`🗑️ Suppression de ${snapshot.size} articles existants...`);
+                
+                const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
+                
+                for (const docSnap of snapshot.docs) {
+                    await deleteDoc(doc(db, "stock", docSnap.id));
+                    debugLog(`✓ Supprimé: ${docSnap.data().name}`);
+                }
+                
+                // 2. Créer le nouveau stock
+                const stockData = [
+                    { name: "Sprays vaporisateurs chlorhexidine 50 ml", icon: "💉", quantity: 2 },
+                    { name: "Spray vaporisateur alcool 70°", icon: "🧴", quantity: 1 },
+                    { name: "Sachets de 5 compresses non tissées stériles 5×5cm", icon: "🧻", quantity: 6 },
+                    { name: "Bandes nylon extensibles 5cm × 3m", icon: "🎗️", quantity: 4 },
+                    { name: "Pochettes de 12 pansements adhésifs assortis", icon: "🩹", quantity: 3 },
+                    { name: "Pansement compressif 7,5 × 7,5 cm", icon: "📦", quantity: 1 },
+                    { name: "Pansement compressif 10 × 10 cm", icon: "📦", quantity: 1 },
+                    { name: "Doses de 5 ml de gel hydroalcoolique", icon: "🧴", quantity: 4 },
+                    { name: "Paires de gants vinyle taille 8/9", icon: "🧤", quantity: 2 },
+                    { name: "Paire de ciseaux 14 cm", icon: "✂️", quantity: 1 },
+                    { name: "Pince à échardes", icon: "🔧", quantity: 1 },
+                    { name: "Couverture de survie face or/argent 2,20×1,40m", icon: "🟡", quantity: 1 },
+                    { name: "Bandes de crêpe 7cm × 4m", icon: "🎗️", quantity: 4 },
+                    { name: "Rouleaux de sparadrap microporeux 5m × 2,5cm", icon: "📏", quantity: 2 },
+                    { name: "Doigtier en cuir", icon: "👆", quantity: 1 },
+                    { name: "Serviettes imprégnées à base d'arnica", icon: "🌿", quantity: 4 },
+                    { name: "Serviettes imprégnées refroidissantes anti-brûlure", icon: "🧊", quantity: 6 },
+                    { name: "Unidoses de 5 ml de sérum physiologique stérile", icon: "💧", quantity: 2 },
+                    { name: "Écharpe triangulaire", icon: "🔺", quantity: 1 },
+                    { name: "Livret conseils d'urgence", icon: "📖", quantity: 1 },
+                    { name: "Serviettes anti-moustique", icon: "🦟", quantity: 4 },
+                    { name: "Kit coton de 25 g", icon: "☁️", quantity: 1 },
+                    { name: "Épingles de sûreté", icon: "📌", quantity: 12 },
+                    { name: "Sachets à déchets de soins DASRI", icon: "🗑️", quantity: 3 },
+                    { name: "Poches de froid instantané", icon: "❄️", quantity: 2 },
+                    { name: "Sachet HAIP récupération de membre sectionné", icon: "🆘", quantity: 1 },
+                    { name: "Masque d'insufflation bouche-à-bouche", icon: "😷", quantity: 1 }
+                ];
+
+                debugLog('📦 Création du nouveau stock...');
+                for (const item of stockData) {
+                    const docRef = await addDoc(collection(db, "stock"), item);
+                    debugLog(`✓ Ajouté: ${item.name} (${item.quantity})`);
+                }
+
+                debugLog('✅ Réinitialisation terminée avec succès !');
+                showNotification('✅ Stock réinitialisé avec succès ! Rechargez la page.', 'success');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+
+            } catch (error) {
+                debugLog(`❌ ERREUR lors de la réinitialisation: ${error.message}`, 'error');
+                showNotification('❌ Erreur lors de la réinitialisation', 'error');
+            }
+        };
+
+        // ============================================
         // INITIALISATION DU STOCK
         // ============================================
         async function initStock() {
             const stockData = [
-                { name: "Pansements", icon: "🩹", quantity: 50 },
-                { name: "Compresses stériles", icon: "🧻", quantity: 30 },
-                { name: "Désinfectant", icon: "💊", quantity: 5 },
-                { name: "Bandages", icon: "🎗️", quantity: 15 },
-                { name: "Ciseaux", icon: "✂️", quantity: 3 },
-                { name: "Gants jetables", icon: "🧤", quantity: 40 },
-                { name: "Thermomètre", icon: "🌡️", quantity: 2 },
-                { name: "Masques", icon: "😷", quantity: 25 }
+                { name: "Sprays vaporisateurs chlorhexidine 50 ml", icon: "💉", quantity: 2 },
+                { name: "Spray vaporisateur alcool 70°", icon: "🧴", quantity: 1 },
+                { name: "Sachets de 5 compresses non tissées stériles 5×5cm", icon: "🧻", quantity: 6 },
+                { name: "Bandes nylon extensibles 5cm × 3m", icon: "🎗️", quantity: 4 },
+                { name: "Pochettes de 12 pansements adhésifs assortis", icon: "🩹", quantity: 3 },
+                { name: "Pansement compressif 7,5 × 7,5 cm", icon: "📦", quantity: 1 },
+                { name: "Pansement compressif 10 × 10 cm", icon: "📦", quantity: 1 },
+                { name: "Doses de 5 ml de gel hydroalcoolique", icon: "🧴", quantity: 4 },
+                { name: "Paires de gants vinyle taille 8/9", icon: "🧤", quantity: 2 },
+                { name: "Paire de ciseaux 14 cm", icon: "✂️", quantity: 1 },
+                { name: "Pince à échardes", icon: "🔧", quantity: 1 },
+                { name: "Couverture de survie face or/argent 2,20×1,40m", icon: "🟡", quantity: 1 },
+                { name: "Bandes de crêpe 7cm × 4m", icon: "🎗️", quantity: 4 },
+                { name: "Rouleaux de sparadrap microporeux 5m × 2,5cm", icon: "📏", quantity: 2 },
+                { name: "Doigtier en cuir", icon: "👆", quantity: 1 },
+                { name: "Serviettes imprégnées à base d'arnica", icon: "🌿", quantity: 4 },
+                { name: "Serviettes imprégnées refroidissantes anti-brûlure", icon: "🧊", quantity: 6 },
+                { name: "Unidoses de 5 ml de sérum physiologique stérile", icon: "💧", quantity: 2 },
+                { name: "Écharpe triangulaire", icon: "🔺", quantity: 1 },
+                { name: "Livret conseils d'urgence", icon: "📖", quantity: 1 },
+                { name: "Serviettes anti-moustique", icon: "🦟", quantity: 4 },
+                { name: "Kit coton de 25 g", icon: "☁️", quantity: 1 },
+                { name: "Épingles de sûreté", icon: "📌", quantity: 12 },
+                { name: "Sachets à déchets de soins DASRI", icon: "🗑️", quantity: 3 },
+                { name: "Poches de froid instantané", icon: "❄️", quantity: 2 },
+                { name: "Sachet HAIP récupération de membre sectionné", icon: "🆘", quantity: 1 },
+                { name: "Masque d'insufflation bouche-à-bouche", icon: "😷", quantity: 1 }
             ];
 
             try {

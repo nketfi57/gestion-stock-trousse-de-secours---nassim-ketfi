@@ -897,7 +897,20 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, onSnapshot, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            updateDoc, 
+            onSnapshot, 
+            addDoc, 
+            query, 
+            orderBy,
+            serverTimestamp,
+            Timestamp
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDEnFEXQkCeRxQ8w_wiMP8KYfhFRLyAct4",
@@ -912,9 +925,10 @@
         const db = getFirestore(app);
         const ADMIN_PASSWORD = 'Congobrazzaville28@';
 
+        // Liste complète et correcte du stock initial
         const initialStock = {
-            "spray_chlorhexidine_1": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
-            "spray_chlorhexidine_2": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
+            "spray_chlorhexidine_1": { name: "Spray vaporisateur chlorhexidine 50 ml (1)", quantity: 1 },
+            "spray_chlorhexidine_2": { name: "Spray vaporisateur chlorhexidine 50 ml (2)", quantity: 1 },
             "spray_alcool": { name: "Spray vaporisateur alcool 70°", quantity: 1 },
             "compresses_steriles": { name: "Sachets de 5 compresses non tissées stériles 5 × 5 cm", quantity: 6 },
             "bandes_nylon": { name: "Bandes nylon extensibles 5 cm × 3 m", quantity: 4 },
@@ -947,20 +961,20 @@
         let isAdmin = false;
         let stockData = {};
 
-        // Variables globales pour le système
-        window.appState = {
-            db: db,
-            currentUser: '',
-            isAdmin: false,
-            stockData: {}
-        };
-
+        // Initialiser le stock dans Firebase
         async function initStock() {
-            for (const [key, value] of Object.entries(initialStock)) {
-                await setDoc(doc(db, "stock", key), value, { merge: true });
+            console.log("Initialisation du stock...");
+            try {
+                for (const [key, value] of Object.entries(initialStock)) {
+                    await setDoc(doc(db, "stock", key), value, { merge: true });
+                }
+                console.log("✓ Stock initialisé avec succès");
+            } catch (error) {
+                console.error("Erreur lors de l'initialisation:", error);
             }
         }
 
+        // Charger le stock depuis Firebase
         async function loadStock() {
             const stockGrid = document.getElementById('stockGrid');
             const adminGrid = document.getElementById('adminGrid');
@@ -968,58 +982,63 @@
             if (stockGrid) stockGrid.innerHTML = '';
             if (adminGrid) adminGrid.innerHTML = '';
 
-            const snapshot = await getDocs(collection(db, "stock"));
-            stockData = {};
-            window.appState.stockData = {};
-            
-            let index = 0;
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const id = docSnap.id;
-                stockData[id] = data;
-                window.appState.stockData[id] = data;
+            try {
+                const snapshot = await getDocs(collection(db, "stock"));
+                stockData = {};
+                
+                let index = 0;
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    stockData[id] = data;
 
-                if (stockGrid) {
-                    const card = document.createElement('div');
-                    card.className = 'stock-card';
-                    card.style.animationDelay = `${index * 0.05}s`;
-                    
-                    let badgeClass = 'badge-success';
-                    if (data.quantity === 0) badgeClass = 'badge-danger';
-                    else if (data.quantity <= 2) badgeClass = 'badge-warning';
+                    if (stockGrid && !isAdmin) {
+                        const card = document.createElement('div');
+                        card.className = 'stock-card';
+                        card.style.animationDelay = `${index * 0.05}s`;
+                        
+                        let badgeClass = 'badge-success';
+                        if (data.quantity === 0) badgeClass = 'badge-danger';
+                        else if (data.quantity <= 2) badgeClass = 'badge-warning';
 
-                    card.innerHTML = `
-                        <div class="stock-header">
-                            <div class="stock-name">${data.name}</div>
-                            <div class="badge ${badgeClass}">${data.quantity}</div>
-                        </div>
-                        <div class="qty-controls">
-                            <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
-                            <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${data.quantity}">
-                            <button class="qty-btn" onclick="changeQty('${id}', 1, ${data.quantity})">+</button>
-                            <button class="btn-take" onclick="addToCart('${id}', '${escapeHtml(data.name)}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
-                                Prendre
-                            </button>
-                        </div>
-                    `;
-                    stockGrid.appendChild(card);
+                        card.innerHTML = `
+                            <div class="stock-header">
+                                <div class="stock-name">${escapeHtml(data.name)}</div>
+                                <div class="badge ${badgeClass}">${data.quantity}</div>
+                            </div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+                                <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${Math.max(1, data.quantity)}">
+                                <button class="qty-btn" onclick="changeQty('${id}', 1, ${data.quantity})">+</button>
+                                <button class="btn-take" onclick="takeItem('${id}', '${escapeHtml(data.name)}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
+                                    Prendre
+                                </button>
+                            </div>
+                        `;
+                        stockGrid.appendChild(card);
+                    }
+
+                    if (adminGrid && isAdmin) {
+                        const item = document.createElement('div');
+                        item.className = 'admin-item';
+                        item.innerHTML = `
+                            <label>${escapeHtml(data.name)}</label>
+                            <input type="number" id="admin-${id}" value="${data.quantity}" min="0">
+                        `;
+                        adminGrid.appendChild(item);
+                    }
+
+                    index++;
+                });
+
+                if (isAdmin) {
+                    updateStats();
                 }
 
-                if (adminGrid) {
-                    const item = document.createElement('div');
-                    item.className = 'admin-item';
-                    item.innerHTML = `
-                        <label>${data.name}</label>
-                        <input type="number" id="admin-${id}" value="${data.quantity}" min="0">
-                    `;
-                    adminGrid.appendChild(item);
-                }
-
-                index++;
-            });
-
-            if (isAdmin) {
-                updateStats();
+                console.log("✓ Stock chargé:", Object.keys(stockData).length, "articles");
+            } catch (error) {
+                console.error("Erreur lors du chargement du stock:", error);
+                showNotification('❌ Erreur lors du chargement du stock', 'error');
             }
         }
 
@@ -1030,6 +1049,7 @@
             return div.innerHTML;
         }
 
+        // Mettre à jour les statistiques
         async function updateStats() {
             let total = 0;
             let low = 0;
@@ -1041,18 +1061,23 @@
                 else if (data.quantity <= 2) low++;
             }
 
-            const logsSnapshot = await getDocs(collection(db, "logs"));
-            let totalTaken = 0;
-            logsSnapshot.forEach((doc) => {
-                totalTaken += doc.data().quantity;
-            });
+            try {
+                const logsSnapshot = await getDocs(collection(db, "logs"));
+                let totalTaken = 0;
+                logsSnapshot.forEach((doc) => {
+                    totalTaken += doc.data().quantity || 0;
+                });
 
-            document.getElementById('totalItems').textContent = total;
-            document.getElementById('lowStock').textContent = low;
-            document.getElementById('outOfStock').textContent = out;
-            document.getElementById('totalTaken').textContent = totalTaken;
+                document.getElementById('totalItems').textContent = total;
+                document.getElementById('lowStock').textContent = low;
+                document.getElementById('outOfStock').textContent = out;
+                document.getElementById('totalTaken').textContent = totalTaken;
+            } catch (error) {
+                console.error("Erreur stats:", error);
+            }
         }
 
+        // Filtrer le stock
         window.filterStock = function() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.querySelectorAll('.stock-card');
@@ -1067,7 +1092,9 @@
             });
         };
 
-        onSnapshot(collection(db, "stock"), () => {
+        // Écouter les changements en temps réel
+        onSnapshot(collection(db, "stock"), (snapshot) => {
+            console.log("Mise à jour en temps réel du stock");
             if (!document.getElementById('loginPage').classList.contains('hidden') && 
                 !document.getElementById('adminLoginPage').classList.contains('hidden')) {
                 return;
@@ -1076,30 +1103,61 @@
             if (isAdmin) loadLogs();
         });
 
+        // Charger l'historique
         async function loadLogs() {
             const logsTable = document.getElementById('logsTable');
             if (!logsTable) return;
             
             logsTable.innerHTML = '';
-            const q = query(collection(db, "logs"), orderBy("timestamp", "desc"));
-            const snapshot = await getDocs(q);
+            
+            try {
+                const q = query(collection(db, "logs"), orderBy("timestamp", "desc"));
+                const snapshot = await getDocs(q);
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const date = data.timestamp.toDate();
-                const formatted = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR');
+                if (snapshot.empty) {
+                    logsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucun historique disponible</td></tr>';
+                    return;
+                }
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatted}</td>
-                    <td><strong>${data.location || 'N/A'}</strong></td>
-                    <td>${data.itemName}</td>
-                    <td><strong>${data.quantity}</strong></td>
-                `;
-                logsTable.appendChild(row);
-            });
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    let date;
+                    
+                    // Gérer différents types de timestamp
+                    if (data.timestamp && data.timestamp.toDate) {
+                        date = data.timestamp.toDate();
+                    } else if (data.timestamp instanceof Date) {
+                        date = data.timestamp;
+                    } else {
+                        date = new Date();
+                    }
+                    
+                    const formatted = date.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatted}</td>
+                        <td><strong>${escapeHtml(data.location || 'N/A')}</strong></td>
+                        <td>${escapeHtml(data.itemName || 'Article inconnu')}</td>
+                        <td><strong>${data.quantity || 0}</strong></td>
+                    `;
+                    logsTable.appendChild(row);
+                });
+
+                console.log("✓ Historique chargé:", snapshot.size, "entrées");
+            } catch (error) {
+                console.error("Erreur lors du chargement de l'historique:", error);
+                logsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--danger);">Erreur lors du chargement</td></tr>';
+            }
         }
 
+        // Gérer les pages
         function showPage(pageId) {
             ['loginPage', 'adminLoginPage', 'stockPage', 'adminPage'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
@@ -1107,6 +1165,7 @@
             document.getElementById(pageId).classList.remove('hidden');
         }
 
+        // Afficher une notification
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
@@ -1118,6 +1177,7 @@
             }, 3000);
         }
 
+        // Connexion utilisateur
         window.login = function() {
             const location = document.getElementById('userLocation').value.trim();
             if (!location) {
@@ -1125,7 +1185,6 @@
                 return;
             }
             currentUser = location;
-            window.appState.currentUser = location;
             document.getElementById('currentUser').textContent = location;
             showPage('stockPage');
             loadStock();
@@ -1135,11 +1194,11 @@
         window.showAdminLogin = () => showPage('adminLoginPage');
         window.backToLogin = () => showPage('loginPage');
 
+        // Connexion admin
         window.loginAdmin = function() {
             const pwd = document.getElementById('adminPassword').value;
             if (pwd === ADMIN_PASSWORD) {
                 isAdmin = true;
-                window.appState.isAdmin = true;
                 showPage('adminPage');
                 loadStock();
                 loadLogs();
@@ -1149,17 +1208,17 @@
             }
         };
 
+        // Déconnexion
         window.logout = function() {
             currentUser = '';
             isAdmin = false;
-            window.appState.currentUser = '';
-            window.appState.isAdmin = false;
             document.getElementById('userLocation').value = '';
             document.getElementById('adminPassword').value = '';
             showPage('loginPage');
             showNotification('✓ Déconnexion réussie');
         };
 
+        // Changer la quantité
         window.changeQty = function(id, delta, max) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
@@ -1173,20 +1232,22 @@
             input.value = val;
         };
 
-        window.addToCart = function(id, name, maxQty) {
+        // Prendre un article
+        window.takeItem = function(id, name, maxQty) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
             
             const qty = parseInt(input.value) || 1;
             
             if (qty > maxQty) {
-                showNotification(`⚠️ Stock insuffisant. Maximum : ${maxQty}`, 'error');
+                showNotification(`⚠️ Stock insuffisant. Maximum disponible : ${maxQty}`, 'error');
                 return;
             }
 
             showConfirmationModal(id, name, qty);
         };
 
+        // Afficher la modale de confirmation
         function showConfirmationModal(id, name, qty) {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('fr-FR', { 
@@ -1227,17 +1288,12 @@
                     </div>
                     <div class="modal-buttons">
                         <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-                        <button class="btn-confirm" id="confirmBtn-${id}">Confirmer</button>
+                        <button class="btn-confirm" onclick="confirmTake('${id}', '${escapeHtml(name)}', ${qty})">Confirmer</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
 
-            // Ajouter l'événement de confirmation
-            const confirmBtn = document.getElementById(`confirmBtn-${id}`);
-            confirmBtn.addEventListener('click', () => confirmTake(id, name, qty));
-
-            // Fermer en cliquant sur l'overlay
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeModal();
@@ -1245,6 +1301,7 @@
             });
         }
 
+        // Fermer la modale
         window.closeModal = function() {
             const modal = document.querySelector('.modal-overlay');
             if (modal) {
@@ -1252,76 +1309,100 @@
             }
         };
 
-        async function confirmTake(id, name, qty) {
+        // Confirmer la prise
+        window.confirmTake = async function(id, name, qty) {
             closeModal();
 
             try {
-                const timestamp = new Date();
-                
-                // Récupérer la quantité actuelle
-                const stockSnapshot = await getDocs(collection(db, "stock"));
+                console.log("Début de la prise:", { id, name, qty, user: currentUser });
+
+                // Vérifier le stock actuel
+                const stockDoc = await getDocs(collection(db, "stock"));
                 let currentQty = 0;
+                let itemFound = false;
                 
-                stockSnapshot.forEach((d) => {
-                    if (d.id === id) currentQty = d.data().quantity;
+                stockDoc.forEach((d) => {
+                    if (d.id === id) {
+                        currentQty = d.data().quantity;
+                        itemFound = true;
+                    }
                 });
 
+                if (!itemFound) {
+                    showNotification('❌ Article non trouvé', 'error');
+                    return;
+                }
+
                 if (currentQty < qty) {
-                    showNotification('❌ Stock insuffisant', 'error');
+                    showNotification(`❌ Stock insuffisant. Disponible : ${currentQty}`, 'error');
                     return;
                 }
 
                 // Mettre à jour le stock
+                const newQty = currentQty - qty;
                 await updateDoc(doc(db, "stock", id), {
-                    quantity: currentQty - qty
+                    quantity: newQty
                 });
 
-                // Ajouter dans l'historique
-                await addDoc(collection(db, "logs"), {
+                console.log("✓ Stock mis à jour:", currentQty, "→", newQty);
+
+                // Ajouter dans l'historique avec serverTimestamp
+                const logData = {
                     location: currentUser,
                     itemName: name,
                     quantity: qty,
-                    timestamp: timestamp
-                });
+                    timestamp: serverTimestamp()
+                };
 
-                showNotification(`✓ ${qty} ${name} pris avec succès !`);
-                loadStock();
+                const logRef = await addDoc(collection(db, "logs"), logData);
+                console.log("✓ Log ajouté avec ID:", logRef.id);
+
+                showNotification(`✓ ${qty} × ${name} pris avec succès !`);
                 
-                // Mettre à jour les stats admin si on est admin
+                // Recharger les données
+                await loadStock();
                 if (isAdmin) {
-                    updateStats();
+                    await loadLogs();
+                    await updateStats();
                 }
 
             } catch (error) {
-                console.error('Error:', error);
-                showNotification('❌ Erreur lors de l\'enregistrement', 'error');
+                console.error('❌ Erreur complète:', error);
+                showNotification('❌ Erreur lors de l\'enregistrement: ' + error.message, 'error');
             }
-        }
+        };
 
+        // Mettre à jour les stocks (admin)
         window.updateStocks = async function() {
             try {
                 const snapshot = await getDocs(collection(db, "stock"));
                 
+                let updated = 0;
                 for (const docSnap of snapshot.docs) {
                     const id = docSnap.id;
                     const input = document.getElementById(`admin-${id}`);
                     if (input) {
                         const newQty = parseInt(input.value) || 0;
                         await updateDoc(doc(db, "stock", id), { quantity: newQty });
+                        updated++;
                     }
                 }
 
-                showNotification('✓ Stocks mis à jour avec succès !');
-                loadStock();
+                showNotification(`✓ ${updated} articles mis à jour avec succès !`);
+                await loadStock();
+                await updateStats();
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Erreur:', error);
                 showNotification('❌ Erreur lors de la mise à jour', 'error');
             }
         };
 
-        // Initialiser le stock au chargement
-        initStock();
+        // Initialiser au chargement
+        console.log("🚀 Démarrage de l'application...");
+        initStock().then(() => {
+            console.log("✓ Application prête");
+        });
     </script>
 </body>
 </html>

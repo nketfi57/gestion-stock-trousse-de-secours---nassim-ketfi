@@ -1006,7 +1006,6 @@
         // RÉINITIALISATION COMPLÈTE DU STOCK
         // ============================================
         window.resetStockDatabase = async function() {
-            // Demander le mot de passe
             const password = prompt('🔐 Entrez le mot de passe administrateur pour réinitialiser le stock :');
             
             if (!password) {
@@ -1026,6 +1025,7 @@
 
             try {
                 debugLog('🔄 Début de la réinitialisation du stock...');
+                showNotification('🔄 Initialisation en cours...', 'success');
                 
                 // 1. Supprimer tous les documents existants
                 const snapshot = await getDocs(collection(db, "stock"));
@@ -1076,7 +1076,7 @@
                 }
 
                 debugLog('✅ Réinitialisation terminée avec succès !');
-                showNotification('✅ Stock réinitialisé avec succès ! Rechargez la page.', 'success');
+                showNotification('✅ Stock réinitialisé ! Rechargement...', 'success');
                 
                 setTimeout(() => {
                     location.reload();
@@ -1084,9 +1084,17 @@
 
             } catch (error) {
                 debugLog(`❌ ERREUR lors de la réinitialisation: ${error.message}`, 'error');
-                showNotification('❌ Erreur lors de la réinitialisation', 'error');
+                showNotification('❌ Erreur: ' + error.message, 'error');
             }
         };
+
+        // ============================================
+        // RÉINITIALISATION COMPLÈTE DU STOCK
+        // ============================================
+        // Fonction globale définie immédiatement (avant tout)
+        window.resetStockDatabase = null;
+        
+        // Sera définie après le chargement de Firebase
 
         // ============================================
         // INITIALISATION DU STOCK
@@ -1567,9 +1575,6 @@
             }
         };
 
-        // ============================================
-        // DÉMARRAGE APPLICATION
-        // ============================================
         console.log("🚀 Démarrage de l'application...");
         debugLog('🚀 Application MediStock v2.0');
         

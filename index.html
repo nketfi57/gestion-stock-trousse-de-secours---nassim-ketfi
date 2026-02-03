@@ -889,15 +889,16 @@
         debugLog('🚀 Démarrage de l\'application MediStock');
 
         // ============================================
-        // IMPORT FIREBASE (VERSION 11.1.0)
+        // ✅ IMPORT FIREBASE VERSION CORRIGÉE : 10.14.1
         // ============================================
         let db, getDocs, addDoc, updateDoc, doc, collection, serverTimestamp, query, orderBy, limit;
         
         try {
-            debugLog('📦 Import des modules Firebase...');
+            debugLog('📦 Import des modules Firebase v10.14.1...');
             
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js');
-            const firestoreModule = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
+            // ✅ VERSION CORRIGÉE : 10.14.1 (au lieu de 11.1.0 qui n'existe pas)
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');
+            const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
             
             getDocs = firestoreModule.getDocs;
             addDoc = firestoreModule.addDoc;
@@ -929,6 +930,11 @@
             db = getFirestore(app);
             debugLog('✓ Firebase initialisé avec succès');
             debugLog(`📊 Projet: ${firebaseConfig.projectId}`);
+
+            // TEST DE CONNEXION
+            debugLog('🔍 Test de connexion Firestore...');
+            const testSnapshot = await getDocs(collection(db, "stock"));
+            debugLog(`✅ CONNEXION RÉUSSIE ! ${testSnapshot.size} articles trouvés`);
 
         } catch (error) {
             debugLog(`❌ ERREUR CRITIQUE lors de l'import Firebase: ${error.message}`, 'error');
@@ -1025,7 +1031,7 @@
                 const snapshot = await getDocs(collection(db, "stock"));
                 debugLog(`🗑️ Suppression de ${snapshot.size} articles existants...`);
                 
-                const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
+                const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
                 
                 for (const docSnap of snapshot.docs) {
                     await deleteDoc(doc(db, "stock", docSnap.id));

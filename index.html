@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion Trousse de Secours</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -52,6 +48,11 @@
             50% { transform: scale(1.05); }
         }
 
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
         body {
             font-family: 'Space Grotesk', -apple-system, sans-serif;
             background: var(--bg-gradient);
@@ -80,7 +81,6 @@
             max-width: 1600px;
             margin: 0 auto;
             padding: 2rem;
-            padding-bottom: 5rem;
             position: relative;
             z-index: 1;
         }
@@ -238,23 +238,120 @@
             border: 1px solid var(--card-border);
             border-radius: 16px;
             margin-bottom: 2rem;
-            animation: slideIn 0.6s ease-out;
+            animation: slideIn 0.5s ease-out;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .user-name {
             font-weight: 600;
-            color: var(--accent);
+            font-size: 1.125rem;
+        }
+
+        .search-bar {
+            margin-bottom: 2rem;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 3rem 0 2rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+            animation: slideIn 0.7s ease-out;
+        }
+
+        .section-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px var(--accent-glow));
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.8s ease-out backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .stock-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 3rem;
-            animation: fadeIn 0.8s ease-out 0.2s both;
+            margin-top: 2rem;
         }
 
         .stock-card {
@@ -264,79 +361,92 @@
             border-radius: 16px;
             padding: 1.5rem;
             transition: all 0.3s ease;
-            animation: slideIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out backwards;
+        }
+
+        .stock-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .stock-card:hover::before {
+            left: 100%;
         }
 
         .stock-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
             border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(0, 217, 255, 0.2);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .card-header {
+        .stock-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .item-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .item-name {
-            font-size: 1.25rem;
+        .stock-name {
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            flex: 1;
         }
 
-        .stock-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.03);
+        .badge {
+            padding: 0.5rem 1rem;
             border-radius: 8px;
-        }
-
-        .stock-label {
             font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stock-qty {
-            font-size: 1.5rem;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .stock-qty.low { color: var(--danger); }
-        .stock-qty.medium { color: var(--warning); }
-        .stock-qty.high { color: var(--success); }
+        .badge-success {
+            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
+            color: var(--primary);
+        }
 
-        .qty-selector {
+        .badge-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #ffaa00 100%);
+            color: var(--primary);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #cc0055 100%);
+            color: white;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .qty-controls {
             display: flex;
-            align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1rem;
+            align-items: center;
         }
 
         .qty-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
+            width: 3rem;
+            height: 3rem;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--accent);
-            font-size: 1.25rem;
-            font-weight: 600;
             cursor: pointer;
+            font-weight: 700;
+            color: var(--text-primary);
             transition: all 0.2s;
+            font-size: 1.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -344,118 +454,282 @@
 
         .qty-btn:hover {
             background: var(--accent);
+            border-color: var(--accent);
             color: var(--primary);
             transform: scale(1.1);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
         .qty-input {
-            flex: 1;
+            width: 4rem;
             text-align: center;
             padding: 0.75rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--card-border);
             border-radius: 8px;
+            font-weight: 600;
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.125rem;
-            font-weight: 600;
         }
 
-        .take-btn {
-            width: 100%;
-            padding: 0.875rem;
+        .btn-take {
             background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
             color: var(--primary);
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.875rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 255, 159, 0.3);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(0, 255, 159, 0.3);
+            font-size: 0.875rem;
         }
 
-        .take-btn:hover {
+        .btn-take:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0, 255, 159, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 255, 159, 0.5);
         }
 
-        .take-btn:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
+        .btn-take:disabled {
+            opacity: 0.3;
             cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.1);
             box-shadow: none;
         }
 
-        .admin-input {
-            width: 100px;
-            padding: 0.5rem;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.05);
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .admin-item {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 12px;
             border: 1px solid var(--card-border);
-            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        .admin-item label {
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: rgba(0, 217, 255, 0.1);
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--accent);
+            border-bottom: 2px solid var(--card-border);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--success);
             color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .notification.success {
+            border-color: var(--success);
+        }
+
+        .notification.error {
+            border-color: var(--danger);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stock-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn-sm {
+                width: 100%;
+            }
+
+            .notification {
+                left: 1rem;
+                right: 1rem;
+            }
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--success), var(--accent));
         }
 
         .modal-overlay {
             position: fixed;
-            inset: 0;
-            background: rgba(10, 14, 39, 0.9);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 2000;
             animation: fadeIn 0.3s ease-out;
         }
 
         .modal {
-            background: var(--primary-light);
-            border: 1px solid var(--accent);
-            border-radius: 24px;
-            padding: 3rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2.5rem;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 0 60px var(--accent-glow), 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.4s ease-out 0.1s both;
+            box-shadow: 0 30px 80px rgba(0, 217, 255, 0.4);
+            animation: slideIn 0.4s ease-out;
+            position: relative;
         }
 
         .modal-icon {
             font-size: 4rem;
             text-align: center;
             margin-bottom: 1.5rem;
-            animation: pulse 2s ease-in-out infinite;
+            animation: pulse 1s ease-in-out infinite;
         }
 
         .modal-title {
-            font-size: 2rem;
+            font-size: 1.75rem;
+            font-weight: 700;
             text-align: center;
-            margin-bottom: 2rem;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            color: var(--accent);
         }
 
         .modal-content {
-            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
         }
 
         .modal-info {
             display: flex;
             justify-content: space-between;
-            padding: 1rem;
-            background: var(--card-bg);
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            border: 1px solid var(--card-border);
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .modal-info:last-child {
+            border-bottom: none;
         }
 
         .modal-label {
             color: var(--text-secondary);
-            font-weight: 500;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .modal-value {
@@ -468,336 +742,107 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+            margin-top: 1.5rem;
         }
 
-        .btn-cancel, .btn-confirm {
-            padding: 1rem 2rem;
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
+            color: var(--primary);
+            padding: 1rem;
             border: none;
             border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 255, 159, 0.5);
         }
 
         .btn-cancel {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
             border: 1px solid var(--card-border);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .btn-cancel:hover {
             background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-confirm {
-            background: linear-gradient(135deg, var(--success) 0%, #00cc7f 100%);
-            color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
-        }
-
-        .btn-confirm:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(0, 255, 159, 0.4);
-        }
-
-        .logs-section {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logs-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .logs-table th {
-            background: rgba(0, 217, 255, 0.1);
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--accent);
-            border-bottom: 2px solid var(--accent);
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            letter-spacing: 0.05em;
-        }
-
-        .logs-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--card-border);
-            color: var(--text-secondary);
-        }
-
-        .logs-table tr:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .notification {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            color: var(--text-primary);
-            font-weight: 500;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 2000;
-            animation: slideIn 0.3s ease-out;
-            max-width: 400px;
-        }
-
-        .notification.success {
-            border-color: var(--success);
-            box-shadow: 0 10px 30px rgba(0, 255, 159, 0.3);
-        }
-
-        .notification.error {
             border-color: var(--danger);
-            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 0.5rem;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* Debug console */
-        .debug-console {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 400px;
-            max-height: 300px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--accent);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--success);
-            overflow-y: auto;
-            z-index: 9999;
-            display: none;
-        }
-
-        .debug-console.active {
-            display: block;
-        }
-
-        .debug-console .error {
             color: var(--danger);
-        }
-
-        .debug-console .warning {
-            color: var(--warning);
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.5rem;
-            }
-
-            .stock-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal {
-                padding: 2rem;
-            }
-
-            .notification {
-                top: 1rem;
-                right: 1rem;
-                left: 1rem;
-            }
-
-            .debug-console {
-                width: calc(100% - 40px);
-                bottom: 80px;
-            }
-        }
-
-        .credits-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--card-border);
-            padding: 1rem 2rem;
-            text-align: center;
-            z-index: 999;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .credits-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .credits-divider {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .credits-name {
-            color: var(--accent);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .credits-name:hover {
-            color: var(--success);
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .credits-role {
-            color: var(--text-secondary);
-            font-style: italic;
         }
     </style>
 </head>
 <body>
-    <!-- Debug Console -->
-    <div id="debugConsole" class="debug-console"></div>
-
-    <!-- Page de connexion -->
-    <div id="loginPage" class="page active">
+    <div class="container">
         <div class="header">
             <div class="logo">🏥</div>
-            <h1>MediStock</h1>
-            <p>Système de Gestion Trousse de Secours</p>
+            <h1>Gestion Trousse de Secours</h1>
+            <p>Système de suivi en temps réel</p>
         </div>
-        <div class="auth-card">
-            <div class="form-group">
-                <label for="userLocation">📍 Votre Lieu</label>
-                <input 
-                    type="text" 
-                    id="userLocation" 
-                    placeholder="Ex: Bureau, Cuisine, Garage..."
-                    onkeypress="if(event.key==='Enter') login()"
-                >
-            </div>
-            <button class="btn btn-primary" onclick="login()">Se Connecter</button>
-            <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
-            <button class="btn btn-secondary" onclick="toggleDebug()" style="margin-top: 1rem;">🐛 Toggle Debug</button>
-            <button class="btn btn-secondary" onclick="resetStockDatabase()" style="margin-top: 1rem; background: #ff6b6b;">🔄 Réinitialiser le Stock</button>
-        </div>
-    </div>
 
-    <!-- Page de connexion admin -->
-    <div id="adminLoginPage" class="page">
-        <div class="header">
-            <div class="logo">🔒</div>
-            <h1>Admin Access</h1>
-            <p>Espace Administrateur</p>
-        </div>
-        <div class="auth-card">
-            <div class="form-group">
-                <label for="adminPassword">🔐 Mot de Passe Admin</label>
-                <input 
-                    type="password" 
-                    id="adminPassword" 
-                    placeholder="Entrez le mot de passe"
-                    onkeypress="if(event.key==='Enter') loginAdmin()"
-                >
+        <!-- Login User -->
+        <div id="loginPage">
+            <div class="auth-card">
+                <div class="form-group">
+                    <label for="userLocation">📍 Lieu de prise</label>
+                    <input type="text" id="userLocation" placeholder="Ex: Infirmerie, Bureau A, Terrain...">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Se connecter</button>
+                <button class="btn btn-secondary" onclick="showAdminLogin()">Accès Administrateur</button>
             </div>
-            <button class="btn btn-primary" onclick="loginAdmin()">Se Connecter</button>
-            <button class="btn btn-secondary" onclick="backToLogin()">Retour</button>
         </div>
-    </div>
 
-    <!-- Page de stock utilisateur -->
-    <div id="stockPage" class="page">
-        <div class="container">
-            <div class="header">
-                <div class="logo">🏥</div>
-                <h1>MediStock</h1>
+        <!-- Login Admin -->
+        <div id="adminLoginPage" class="hidden">
+            <div class="auth-card">
+                <div class="form-group">
+                    <label for="adminPassword">🔐 Mot de passe administrateur</label>
+                    <input type="password" id="adminPassword" placeholder="••••••••">
+                </div>
+                <button class="btn btn-primary" onclick="loginAdmin()">Se connecter</button>
+                <button class="btn btn-secondary" onclick="backToLogin()">Retour</button>
             </div>
+        </div>
 
+        <!-- User Stock Page -->
+        <div id="stockPage" class="hidden">
             <div class="user-bar">
                 <div class="user-info">
-                    <span>📍</span>
-                    <span id="currentUser"></span>
+                    <div class="user-avatar">📍</div>
+                    <div class="user-name" id="currentUser"></div>
                 </div>
                 <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
             </div>
 
-            <div id="stockList" class="stock-grid"></div>
-        </div>
-    </div>
-
-    <!-- Page admin -->
-    <div id="adminPage" class="page">
-        <div class="container">
-            <div class="header">
-                <div class="logo">🔧</div>
-                <h1>Admin Panel</h1>
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Rechercher un article..." oninput="filterStock()">
             </div>
 
+            <h2 class="section-header">
+                <span class="section-icon">📦</span> 
+                Matériel disponible
+            </h2>
+            <div id="stockGrid" class="stock-grid"></div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="adminPage" class="hidden">
             <div class="user-bar">
                 <div class="user-info">
-                    <span>🔐</span>
-                    <span>Administrateur</span>
+                    <div class="user-avatar">🔐</div>
+                    <div class="user-name">Administrateur</div>
                 </div>
                 <button class="btn btn-secondary btn-sm" onclick="logout()">Déconnexion</button>
             </div>
@@ -805,508 +850,412 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="totalItems">0</div>
-                    <div class="stat-label">Articles Totaux</div>
+                    <div class="stat-label">Articles totaux</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="totalStock">0</div>
-                    <div class="stat-label">Stock Total</div>
+                    <div class="stat-value" id="lowStock">0</div>
+                    <div class="stat-label">Stock faible</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="totalLogs">0</div>
-                    <div class="stat-label">Mouvements</div>
+                    <div class="stat-value" id="outOfStock">0</div>
+                    <div class="stat-label">Stock épuisé</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTaken">0</div>
+                    <div class="stat-label">Prises totales</div>
                 </div>
             </div>
 
-            <div class="logs-section">
-                <div class="section-title">
-                    <span>📦</span>
-                    <span>Gestion des Stocks</span>
-                </div>
-                <div id="adminStockList" class="stock-grid"></div>
-                <button class="btn btn-primary" onclick="updateStocks()" style="margin-top: 1.5rem;">
-                    💾 Mettre à jour les stocks
-                </button>
-            </div>
+            <h2 class="section-header">
+                <span class="section-icon">⚙️</span>
+                Gestion des stocks
+            </h2>
+            <div id="adminGrid" class="admin-grid"></div>
+            <button class="btn btn-primary" onclick="updateStocks()" style="max-width: 400px; margin-top: 1.5rem;">
+                💾 Enregistrer les modifications
+            </button>
 
-            <div class="logs-section">
-                <div class="section-title">
-                    <span>📋</span>
-                    <span>Historique des Prises</span>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table class="logs-table">
-                        <thead>
-                            <tr>
-                                <th>📅 Date & Heure</th>
-                                <th>📍 Lieu</th>
-                                <th>📦 Article</th>
-                                <th>🔢 Quantité</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logsTableBody"></tbody>
-                    </table>
-                </div>
+            <h2 class="section-header" style="margin-top: 4rem;">
+                <span class="section-icon">📊</span>
+                Historique des prises
+            </h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Heure</th>
+                            <th>Lieu</th>
+                            <th>Article</th>
+                            <th>Quantité</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTable"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Footer Crédits -->
-    <div class="credits-footer">
-        <div class="credits-content">
-            <span>Créé par</span>
-            <span class="credits-name">Nassim Ketfi</span>
-            <span class="credits-divider">•</span>
-            <span class="credits-role">Développeur-Administrateur</span>
-            <span class="credits-divider">•</span>
-            <span>Droits Administrateurs</span>
-            <span class="credits-divider">•</span>
-            <span class="credits-name">Christian Loko</span>
-        </div>
-    </div>
-
-    <!-- Firebase et logique -->
     <script type="module">
-        // ============================================
-        // SYSTÈME DE DEBUG
-        // ============================================
-        const debugLog = (message, type = 'info') => {
-            const console_elem = document.getElementById('debugConsole');
-            const timestamp = new Date().toLocaleTimeString();
-            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
-            console_elem.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
-            console_elem.scrollTop = console_elem.scrollHeight;
-            
-            // Log aussi dans la vraie console
-            if (type === 'error') console.error(message);
-            else if (type === 'warning') console.warn(message);
-            else console.log(message);
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, onSnapshot, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            updateDoc, 
+            onSnapshot, 
+            addDoc, 
+            query, 
+            orderBy,
+            serverTimestamp,
+            Timestamp
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEnFEXQkCeRxQ8w_wiMP8KYfhFRLyAct4",
+            authDomain: "gestion-stock-trousse-secours.firebaseapp.com",
+            projectId: "gestion-stock-trousse-secours",
+            storageBucket: "gestion-stock-trousse-secours.firebasestorage.app",
+            messagingSenderId: "160107585283",
+            appId: "1:160107585283:web:3aa4a020d326a8dd66d336"
         };
 
-        window.toggleDebug = () => {
-            document.getElementById('debugConsole').classList.toggle('active');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ADMIN_PASSWORD = 'Congobrazzaville28@';
+
+        // Liste complète et correcte du stock initial
+        const initialStock = {
+            "spray_chlorhexidine_1": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
+            "spray_chlorhexidine_2": { name: "Spray vaporisateur chlorhexidine 50 ml", quantity: 1 },
+            "spray_chlorhexidine_1": { name: "Spray vaporisateur chlorhexidine 50 ml (1)", quantity: 1 },
+            "spray_chlorhexidine_2": { name: "Spray vaporisateur chlorhexidine 50 ml (2)", quantity: 1 },
+            "spray_alcool": { name: "Spray vaporisateur alcool 70°", quantity: 1 },
+            "compresses_steriles": { name: "Sachets de 5 compresses non tissées stériles 5 × 5 cm", quantity: 6 },
+            "bandes_nylon": { name: "Bandes nylon extensibles 5 cm × 3 m", quantity: 4 },
+            "pansements_adhesifs": { name: "Pochettes de 12 pansements adhésifs assortis", quantity: 3 },
+            "pansement_compressif_75": { name: "Pansement compressif 7,5 × 7,5 cm", quantity: 1 },
+            "pansement_compressif_10": { name: "Pansement compressif 10 × 10 cm", quantity: 1 },
+            "gel_hydroalcoolique": { name: "Doses de 5 ml de gel hydroalcoolique", quantity: 4 },
+            "gants_vinyle": { name: "Paires de gants vinyle taille 8/9", quantity: 2 },
+            "ciseaux": { name: "Paire de ciseaux 14 cm", quantity: 1 },
+            "pince_echardes": { name: "Pince à échardes", quantity: 1 },
+            "couverture_survie": { name: "Couverture de survie face or/argent 2,20 × 1,40 m", quantity: 1 },
+            "bandes_crepe": { name: "Bandes de crêpe 7 cm × 4 m", quantity: 4 },
+            "sparadrap": { name: "Rouleaux de sparadrap microporeux 5 m × 2,5 cm", quantity: 2 },
+            "doigtier": { name: "Doigtier en cuir", quantity: 1 },
+            "serviettes_arnica": { name: "Serviettes imprégnées à base d'arnica", quantity: 4 },
+            "serviettes_antibrulure": { name: "Serviettes imprégnées refroidissantes anti-brûlure", quantity: 6 },
+            "serum_physiologique": { name: "Unidoses de 5 ml de sérum physiologique stérile", quantity: 2 },
+            "echarpe_triangulaire": { name: "Écharpe triangulaire", quantity: 1 },
+            "livret_conseils": { name: "Livret conseils d'urgence", quantity: 1 },
+            "serviettes_antimoustique": { name: "Serviettes anti-moustique", quantity: 4 },
+            "kit_coton": { name: "Kit coton de 25 g", quantity: 1 },
+            "epingles_surete": { name: "Épingles de sûreté", quantity: 12 },
+            "sachets_dasri": { name: "Sachets à déchets de soins DASRI", quantity: 3 },
+            "poches_froid": { name: "Poches de froid instantané", quantity: 2 },
+            "sachet_haip": { name: "Sachet HAIP récupération de membre sectionné", quantity: 1 },
+            "masque_insufflation": { name: "Masque d'insufflation bouche-à-bouche", quantity: 1 }
         };
 
-        debugLog('🚀 Démarrage de l\'application MediStock');
-
-        // ============================================
-        // ✅ IMPORT FIREBASE VERSION CORRIGÉE : 10.14.1
-        // ============================================
-        let db, getDocs, addDoc, updateDoc, doc, collection, serverTimestamp, query, orderBy, limit;
-        
-        try {
-            debugLog('📦 Import des modules Firebase v10.14.1...');
-            
-            // ✅ VERSION CORRIGÉE : 10.14.1 (au lieu de 11.1.0 qui n'existe pas)
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');
-            const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
-            
-            getDocs = firestoreModule.getDocs;
-            addDoc = firestoreModule.addDoc;
-            updateDoc = firestoreModule.updateDoc;
-            doc = firestoreModule.doc;
-            collection = firestoreModule.collection;
-            serverTimestamp = firestoreModule.serverTimestamp;
-            query = firestoreModule.query;
-            orderBy = firestoreModule.orderBy;
-            limit = firestoreModule.limit;
-            const { getFirestore } = firestoreModule;
-
-            debugLog('✓ Modules Firebase importés avec succès');
-
-            // ============================================
-            // CONFIGURATION FIREBASE
-            // ============================================
-            const firebaseConfig = {
-                apiKey: "AIzaSyAyBJuiuuCUyUJ7HVLLvqSBHw4TpfEd73I",
-                authDomain: "trousse-de-secours.firebaseapp.com",
-                projectId: "trousse-de-secours",
-                storageBucket: "trousse-de-secours.firebasestorage.app",
-                messagingSenderId: "1072085730538",
-                appId: "1:1072085730538:web:4e0a086f2c73bdd6f05bf5"
-            };
-
-            debugLog('🔧 Initialisation de Firebase...');
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            debugLog('✓ Firebase initialisé avec succès');
-            debugLog(`📊 Projet: ${firebaseConfig.projectId}`);
-
-            // TEST DE CONNEXION
-            debugLog('🔍 Test de connexion Firestore...');
-            const testSnapshot = await getDocs(collection(db, "stock"));
-            debugLog(`✅ CONNEXION RÉUSSIE ! ${testSnapshot.size} articles trouvés`);
-
-        } catch (error) {
-            debugLog(`❌ ERREUR CRITIQUE lors de l'import Firebase: ${error.message}`, 'error');
-            debugLog(`Stack: ${error.stack}`, 'error');
-            alert('Erreur lors du chargement de Firebase. Consultez la console de debug.');
-        }
-
-        // ============================================
-        // CONFIGURATION EMAILJS
-        // ============================================
-        try {
-            debugLog('📧 Configuration EmailJS...');
-            emailjs.init('53VGIxYALR_QqLjgx');
-            debugLog('✓ EmailJS configuré');
-        } catch (error) {
-            debugLog(`⚠️ Erreur EmailJS: ${error.message}`, 'warning');
-        }
-
-        const EMAILJS_SERVICE_ID = 'service_u3a8a6y';
-        const EMAILJS_TEMPLATE_ID = 'template_x7guvce';
-        const ADMIN_EMAILS = ['lokontari@gmail.com', 'n.ketfi57@gmail.com'];
-
-        // ============================================
-        // FONCTION D'ENVOI D'EMAIL
-        // ============================================
-        async function sendEmailNotification(itemData) {
-            try {
-                debugLog('📧 Envoi des notifications email...');
-                for (const email of ADMIN_EMAILS) {
-                    const templateParams = {
-                        to_email: email,
-                        user_location: itemData.location,
-                        item_name: itemData.itemName,
-                        quantity: itemData.quantity,
-                        date: itemData.date,
-                        time: itemData.time
-                    };
-
-                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-                    debugLog(`✓ Email envoyé à ${email}`);
-                }
-                return true;
-            } catch (error) {
-                debugLog(`❌ Erreur envoi email: ${error.message}`, 'error');
-                return false;
-            }
-        }
-
-        // ============================================
-        // VARIABLES GLOBALES
-        // ============================================
-        const ADMIN_PASSWORD = "Congobrazzaville28";
         let currentUser = '';
         let isAdmin = false;
+        let stockData = {};
 
-        // Rendre les fonctions accessibles globalement
-        window.db = db;
-        window.getDocs = getDocs;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.doc = doc;
-        window.collection = collection;
-        window.serverTimestamp = serverTimestamp;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.limit = limit;
-
-        // ============================================
-        // RÉINITIALISATION COMPLÈTE DU STOCK
-        // ============================================
-        window.resetStockDatabase = async function() {
-            const password = prompt('🔐 Entrez le mot de passe administrateur pour réinitialiser le stock :');
-            
-            if (!password) {
-                debugLog('❌ Réinitialisation annulée', 'warning');
-                return;
-            }
-            
-            if (password !== 'Congobrazzaville28') {
-                showNotification('❌ Mot de passe incorrect', 'error');
-                debugLog('❌ Tentative de réinitialisation avec mauvais mot de passe', 'error');
-                return;
-            }
-            
-            if (!confirm('⚠️ ATTENTION : Cela va SUPPRIMER tout le stock actuel et le remplacer par le stock initial.\n\nÊtes-vous sûr de vouloir continuer ?')) {
-                return;
-            }
-
-            try {
-                debugLog('🔄 Début de la réinitialisation du stock...');
-                showNotification('🔄 Initialisation en cours...', 'success');
-                
-                // 1. Supprimer tous les documents existants
-                const snapshot = await getDocs(collection(db, "stock"));
-                debugLog(`🗑️ Suppression de ${snapshot.size} articles existants...`);
-                
-                const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
-                
-                for (const docSnap of snapshot.docs) {
-                    await deleteDoc(doc(db, "stock", docSnap.id));
-                    debugLog(`✓ Supprimé: ${docSnap.data().name}`);
-                }
-                
-                // 2. Créer le nouveau stock
-                const stockData = [
-                    { name: "Sprays vaporisateurs chlorhexidine 50 ml", icon: "💉", quantity: 2 },
-                    { name: "Spray vaporisateur alcool 70°", icon: "🧴", quantity: 1 },
-                    { name: "Sachets de 5 compresses non tissées stériles 5×5cm", icon: "🧻", quantity: 6 },
-                    { name: "Bandes nylon extensibles 5cm × 3m", icon: "🎗️", quantity: 4 },
-                    { name: "Pochettes de 12 pansements adhésifs assortis", icon: "🩹", quantity: 3 },
-                    { name: "Pansement compressif 7,5 × 7,5 cm", icon: "📦", quantity: 1 },
-                    { name: "Pansement compressif 10 × 10 cm", icon: "📦", quantity: 1 },
-                    { name: "Doses de 5 ml de gel hydroalcoolique", icon: "🧴", quantity: 4 },
-                    { name: "Paires de gants vinyle taille 8/9", icon: "🧤", quantity: 2 },
-                    { name: "Paire de ciseaux 14 cm", icon: "✂️", quantity: 1 },
-                    { name: "Pince à échardes", icon: "🔧", quantity: 1 },
-                    { name: "Couverture de survie face or/argent 2,20×1,40m", icon: "🟡", quantity: 1 },
-                    { name: "Bandes de crêpe 7cm × 4m", icon: "🎗️", quantity: 4 },
-                    { name: "Rouleaux de sparadrap microporeux 5m × 2,5cm", icon: "📏", quantity: 2 },
-                    { name: "Doigtier en cuir", icon: "👆", quantity: 1 },
-                    { name: "Serviettes imprégnées à base d'arnica", icon: "🌿", quantity: 4 },
-                    { name: "Serviettes imprégnées refroidissantes anti-brûlure", icon: "🧊", quantity: 6 },
-                    { name: "Unidoses de 5 ml de sérum physiologique stérile", icon: "💧", quantity: 2 },
-                    { name: "Écharpe triangulaire", icon: "🔺", quantity: 1 },
-                    { name: "Livret conseils d'urgence", icon: "📖", quantity: 1 },
-                    { name: "Serviettes anti-moustique", icon: "🦟", quantity: 4 },
-                    { name: "Kit coton de 25 g", icon: "☁️", quantity: 1 },
-                    { name: "Épingles de sûreté", icon: "📌", quantity: 12 },
-                    { name: "Sachets à déchets de soins DASRI", icon: "🗑️", quantity: 3 },
-                    { name: "Poches de froid instantané", icon: "❄️", quantity: 2 },
-                    { name: "Sachet HAIP récupération de membre sectionné", icon: "🆘", quantity: 1 },
-                    { name: "Masque d'insufflation bouche-à-bouche", icon: "😷", quantity: 1 }
-                ];
-
-                debugLog('📦 Création du nouveau stock...');
-                for (const item of stockData) {
-                    const docRef = await addDoc(collection(db, "stock"), item);
-                    debugLog(`✓ Ajouté: ${item.name} (${item.quantity})`);
-                }
-
-                debugLog('✅ Réinitialisation terminée avec succès !');
-                showNotification('✅ Stock réinitialisé ! Rechargement...', 'success');
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-
-            } catch (error) {
-                debugLog(`❌ ERREUR lors de la réinitialisation: ${error.message}`, 'error');
-                showNotification('❌ Erreur: ' + error.message, 'error');
-            }
+        // Variables globales pour le système
+        window.appState = {
+            db: db,
+            currentUser: '',
+            isAdmin: false,
+            stockData: {}
         };
 
-        // ============================================
-        // RÉINITIALISATION COMPLÈTE DU STOCK
-        // ============================================
-        // Fonction globale définie immédiatement (avant tout)
-        window.resetStockDatabase = null;
-        
-        // Sera définie après le chargement de Firebase
-
-        // ============================================
-        // INITIALISATION DU STOCK
-        // ============================================
+        // Initialiser le stock dans Firebase
         async function initStock() {
-            const stockData = [
-                { name: "Sprays vaporisateurs chlorhexidine 50 ml", icon: "💉", quantity: 2 },
-                { name: "Spray vaporisateur alcool 70°", icon: "🧴", quantity: 1 },
-                { name: "Sachets de 5 compresses non tissées stériles 5×5cm", icon: "🧻", quantity: 6 },
-                { name: "Bandes nylon extensibles 5cm × 3m", icon: "🎗️", quantity: 4 },
-                { name: "Pochettes de 12 pansements adhésifs assortis", icon: "🩹", quantity: 3 },
-                { name: "Pansement compressif 7,5 × 7,5 cm", icon: "📦", quantity: 1 },
-                { name: "Pansement compressif 10 × 10 cm", icon: "📦", quantity: 1 },
-                { name: "Doses de 5 ml de gel hydroalcoolique", icon: "🧴", quantity: 4 },
-                { name: "Paires de gants vinyle taille 8/9", icon: "🧤", quantity: 2 },
-                { name: "Paire de ciseaux 14 cm", icon: "✂️", quantity: 1 },
-                { name: "Pince à échardes", icon: "🔧", quantity: 1 },
-                { name: "Couverture de survie face or/argent 2,20×1,40m", icon: "🟡", quantity: 1 },
-                { name: "Bandes de crêpe 7cm × 4m", icon: "🎗️", quantity: 4 },
-                { name: "Rouleaux de sparadrap microporeux 5m × 2,5cm", icon: "📏", quantity: 2 },
-                { name: "Doigtier en cuir", icon: "👆", quantity: 1 },
-                { name: "Serviettes imprégnées à base d'arnica", icon: "🌿", quantity: 4 },
-                { name: "Serviettes imprégnées refroidissantes anti-brûlure", icon: "🧊", quantity: 6 },
-                { name: "Unidoses de 5 ml de sérum physiologique stérile", icon: "💧", quantity: 2 },
-                { name: "Écharpe triangulaire", icon: "🔺", quantity: 1 },
-                { name: "Livret conseils d'urgence", icon: "📖", quantity: 1 },
-                { name: "Serviettes anti-moustique", icon: "🦟", quantity: 4 },
-                { name: "Kit coton de 25 g", icon: "☁️", quantity: 1 },
-                { name: "Épingles de sûreté", icon: "📌", quantity: 12 },
-                { name: "Sachets à déchets de soins DASRI", icon: "🗑️", quantity: 3 },
-                { name: "Poches de froid instantané", icon: "❄️", quantity: 2 },
-                { name: "Sachet HAIP récupération de membre sectionné", icon: "🆘", quantity: 1 },
-                { name: "Masque d'insufflation bouche-à-bouche", icon: "😷", quantity: 1 }
-            ];
-
+            for (const [key, value] of Object.entries(initialStock)) {
+                await setDoc(doc(db, "stock", key), value, { merge: true });
+            console.log("Initialisation du stock...");
             try {
-                debugLog('📦 Vérification du stock dans Firestore...');
-                const snapshot = await getDocs(collection(db, "stock"));
-                
-                if (snapshot.empty) {
-                    debugLog('⚠️ Stock vide, initialisation...');
-                    for (const item of stockData) {
-                        const docRef = await addDoc(collection(db, "stock"), item);
-                        debugLog(`✓ Article ajouté: ${item.name} (ID: ${docRef.id})`);
-                    }
-                    debugLog('✓ Stock initialisé avec succès');
-                } else {
-                    debugLog(`✓ Stock existant trouvé (${snapshot.size} articles)`);
+                for (const [key, value] of Object.entries(initialStock)) {
+                    await setDoc(doc(db, "stock", key), value, { merge: true });
                 }
+                console.log("✓ Stock initialisé avec succès");
             } catch (error) {
-                debugLog(`❌ ERREUR lors de l'initialisation du stock: ${error.message}`, 'error');
-                debugLog(`Code: ${error.code}`, 'error');
-                throw error;
+                console.error("Erreur lors de l'initialisation:", error);
             }
         }
 
-        // ============================================
-        // CHARGEMENT DU STOCK
-        // ============================================
+        // Charger le stock depuis Firebase
         async function loadStock() {
-            try {
-                debugLog('📥 Chargement du stock...');
-                const snapshot = await getDocs(collection(db, "stock"));
-                debugLog(`✓ ${snapshot.size} articles récupérés`);
-                
-                const stockHTML = [];
-                const adminHTML = [];
+            const stockGrid = document.getElementById('stockGrid');
+            const adminGrid = document.getElementById('adminGrid');
 
+            if (stockGrid) stockGrid.innerHTML = '';
+            if (adminGrid) adminGrid.innerHTML = '';
+
+            const snapshot = await getDocs(collection(db, "stock"));
+            stockData = {};
+            window.appState.stockData = {};
+            
+            let index = 0;
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+                stockData[id] = data;
+                window.appState.stockData[id] = data;
+
+                if (stockGrid) {
+                    const card = document.createElement('div');
+                    card.className = 'stock-card';
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    
+                    let badgeClass = 'badge-success';
+                    if (data.quantity === 0) badgeClass = 'badge-danger';
+                    else if (data.quantity <= 2) badgeClass = 'badge-warning';
+
+                    card.innerHTML = `
+                        <div class="stock-header">
+                            <div class="stock-name">${data.name}</div>
+                            <div class="badge ${badgeClass}">${data.quantity}</div>
+                        </div>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+                            <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${data.quantity}">
+                            <button class="qty-btn" onclick="changeQty('${id}', 1, ${data.quantity})">+</button>
+                            <button class="btn-take" onclick="addToCart('${id}', '${escapeHtml(data.name)}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
+                                Prendre
+                            </button>
+                        </div>
+                    `;
+                    stockGrid.appendChild(card);
+                }
+            try {
+                const snapshot = await getDocs(collection(db, "stock"));
+                stockData = {};
+                
+                let index = 0;
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const id = docSnap.id;
-                    const qty = data.quantity;
-                    
-                    let qtyClass = 'high';
-                    if (qty <= 5) qtyClass = 'low';
-                    else if (qty <= 15) qtyClass = 'medium';
+                    stockData[id] = data;
 
-                    // Card utilisateur
-                    stockHTML.push(`
-                        <div class="stock-card">
-                            <div class="card-header">
-                                <div>
-                                    <div class="item-icon">${data.icon}</div>
-                                    <div class="item-name">${escapeHtml(data.name)}</div>
-                                </div>
+                    if (stockGrid && !isAdmin) {
+                        const card = document.createElement('div');
+                        card.className = 'stock-card';
+                        card.style.animationDelay = `${index * 0.05}s`;
+                        
+                        let badgeClass = 'badge-success';
+                        if (data.quantity === 0) badgeClass = 'badge-danger';
+                        else if (data.quantity <= 2) badgeClass = 'badge-warning';
+
+                        card.innerHTML = `
+                            <div class="stock-header">
+                                <div class="stock-name">${escapeHtml(data.name)}</div>
+                                <div class="badge ${badgeClass}">${data.quantity}</div>
                             </div>
-                            <div class="stock-info">
-                                <span class="stock-label">Stock disponible</span>
-                                <span class="stock-qty ${qtyClass}">${qty}</span>
-                            </div>
-                            ${qty > 0 ? `
-                                <div class="qty-selector">
-                                    <button class="qty-btn" onclick="changeQty('${id}', -1, ${qty})">−</button>
-                                    <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${qty}">
-                                    <button class="qty-btn" onclick="changeQty('${id}', 1, ${qty})">+</button>
-                                </div>
-                                <button class="take-btn" onclick="takeItem('${id}', '${escapeHtml(data.name)}', ${qty})">
-                                    ✓ Prendre l'article
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+                                <input type="number" id="qty-${id}" class="qty-input" value="1" min="1" max="${Math.max(1, data.quantity)}">
+                                <button class="qty-btn" onclick="changeQty('${id}', 1, ${data.quantity})">+</button>
+                                <button class="btn-take" onclick="takeItem('${id}', '${escapeHtml(data.name)}', ${data.quantity})" ${data.quantity === 0 ? 'disabled' : ''}>
+                                    Prendre
                                 </button>
-                            ` : `
-                                <button class="take-btn" disabled>Stock épuisé</button>
-                            `}
-                        </div>
-                    `);
-
-                    // Card admin
-                    adminHTML.push(`
-                        <div class="stock-card">
-                            <div class="item-icon">${data.icon}</div>
-                            <div class="item-name">${escapeHtml(data.name)}</div>
-                            <div class="stock-info">
-                                <span class="stock-label">Quantité</span>
-                                <input type="number" id="admin-${id}" class="admin-input" value="${qty}" min="0">
                             </div>
-                        </div>
-                    `);
+                        `;
+                        stockGrid.appendChild(card);
+                    }
+
+                if (adminGrid) {
+                    const item = document.createElement('div');
+                    item.className = 'admin-item';
+                    item.innerHTML = `
+                        <label>${data.name}</label>
+                        <input type="number" id="admin-${id}" value="${data.quantity}" min="0">
+                    `;
+                    adminGrid.appendChild(item);
+                }
+                    if (adminGrid && isAdmin) {
+                        const item = document.createElement('div');
+                        item.className = 'admin-item';
+                        item.innerHTML = `
+                            <label>${escapeHtml(data.name)}</label>
+                            <input type="number" id="admin-${id}" value="${data.quantity}" min="0">
+                        `;
+                        adminGrid.appendChild(item);
+                    }
+
+                index++;
+            });
+                    index++;
                 });
 
-                document.getElementById('stockList').innerHTML = stockHTML.join('');
-                document.getElementById('adminStockList').innerHTML = adminHTML.join('');
-                debugLog('✓ Interface stock mise à jour');
+            if (isAdmin) {
+                updateStats();
+                if (isAdmin) {
+                    updateStats();
+                }
 
+                console.log("✓ Stock chargé:", Object.keys(stockData).length, "articles");
             } catch (error) {
-                debugLog(`❌ Erreur chargement stock: ${error.message}`, 'error');
+                console.error("Erreur lors du chargement du stock:", error);
                 showNotification('❌ Erreur lors du chargement du stock', 'error');
             }
         }
 
-        // ============================================
-        // CHARGEMENT DES LOGS
-        // ============================================
-        async function loadLogs() {
-            try {
-                debugLog('📋 Chargement de l\'historique...');
-                const q = query(
-                    collection(db, "logs"),
-                    orderBy("timestamp", "desc"),
-                    limit(50)
-                );
-                
-                const snapshot = await getDocs(q);
-                debugLog(`✓ ${snapshot.size} logs récupérés`);
-                
-                const rows = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const timestamp = data.timestamp?.toDate();
-                    const dateStr = timestamp ? timestamp.toLocaleDateString('fr-FR') : 'N/A';
-                    const timeStr = timestamp ? timestamp.toLocaleTimeString('fr-FR') : 'N/A';
-                    
-                    rows.push(`
-                        <tr>
-                            <td>${dateStr} ${timeStr}</td>
-                            <td>${escapeHtml(data.location)}</td>
-                            <td>${escapeHtml(data.itemName)}</td>
-                            <td>${data.quantity}</td>
-                        </tr>
-                    `);
-                });
-
-                document.getElementById('logsTableBody').innerHTML = rows.join('');
-                document.getElementById('totalLogs').textContent = snapshot.size;
-                debugLog('✓ Historique affiché');
-
-            } catch (error) {
-                debugLog(`❌ Erreur chargement logs: ${error.message}`, 'error');
-            }
-        }
-
-        // ============================================
-        // MISE À JOUR DES STATISTIQUES
-        // ============================================
-        async function updateStats() {
-            try {
-                debugLog('📊 Mise à jour des statistiques...');
-                const stockSnapshot = await getDocs(collection(db, "stock"));
-                let totalStock = 0;
-                stockSnapshot.forEach(doc => {
-                    totalStock += doc.data().quantity;
-                });
-                
-                document.getElementById('totalItems').textContent = stockSnapshot.size;
-                document.getElementById('totalStock').textContent = totalStock;
-                debugLog(`✓ Stats: ${stockSnapshot.size} articles, ${totalStock} unités`);
-            } catch (error) {
-                debugLog(`❌ Erreur stats: ${error.message}`, 'error');
-            }
-        }
-
-        window.loadStock = loadStock;
-        window.loadLogs = loadLogs;
-        window.updateStats = updateStats;
-
-        // ============================================
-        // UTILITAIRES
-        // ============================================
+        // Fonction pour échapper le HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        function showPage(pageId) {
-            debugLog(`📄 Changement de page: ${pageId}`);
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+        // Mettre à jour les statistiques
+        async function updateStats() {
+            let total = 0;
+            let low = 0;
+            let out = 0;
+
+            for (const [id, data] of Object.entries(stockData)) {
+                total += data.quantity;
+                if (data.quantity === 0) out++;
+                else if (data.quantity <= 2) low++;
+            }
+
+            const logsSnapshot = await getDocs(collection(db, "logs"));
+            let totalTaken = 0;
+            logsSnapshot.forEach((doc) => {
+                totalTaken += doc.data().quantity;
+            });
+            try {
+                const logsSnapshot = await getDocs(collection(db, "logs"));
+                let totalTaken = 0;
+                logsSnapshot.forEach((doc) => {
+                    totalTaken += doc.data().quantity || 0;
+                });
+
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('lowStock').textContent = low;
+            document.getElementById('outOfStock').textContent = out;
+            document.getElementById('totalTaken').textContent = totalTaken;
+                document.getElementById('totalItems').textContent = total;
+                document.getElementById('lowStock').textContent = low;
+                document.getElementById('outOfStock').textContent = out;
+                document.getElementById('totalTaken').textContent = totalTaken;
+            } catch (error) {
+                console.error("Erreur stats:", error);
+            }
         }
 
-        window.showPage = showPage;
+        // Filtrer le stock
+        window.filterStock = function() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.stock-card');
 
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(search)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+
+        onSnapshot(collection(db, "stock"), () => {
+        // Écouter les changements en temps réel
+        onSnapshot(collection(db, "stock"), (snapshot) => {
+            console.log("Mise à jour en temps réel du stock");
+            if (!document.getElementById('loginPage').classList.contains('hidden') && 
+                !document.getElementById('adminLoginPage').classList.contains('hidden')) {
+                return;
+            }
+            loadStock();
+            if (isAdmin) loadLogs();
+        });
+
+        // Charger l'historique
+        async function loadLogs() {
+            const logsTable = document.getElementById('logsTable');
+            if (!logsTable) return;
+
+            logsTable.innerHTML = '';
+            const q = query(collection(db, "logs"), orderBy("timestamp", "desc"));
+            const snapshot = await getDocs(q);
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const date = data.timestamp.toDate();
+                const formatted = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR');
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatted}</td>
+                    <td><strong>${data.location || 'N/A'}</strong></td>
+                    <td>${data.itemName}</td>
+                    <td><strong>${data.quantity}</strong></td>
+                `;
+                logsTable.appendChild(row);
+            });
+            
+            try {
+                const q = query(collection(db, "logs"), orderBy("timestamp", "desc"));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    logsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucun historique disponible</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    let date;
+                    
+                    // Gérer différents types de timestamp
+                    if (data.timestamp && data.timestamp.toDate) {
+                        date = data.timestamp.toDate();
+                    } else if (data.timestamp instanceof Date) {
+                        date = data.timestamp;
+                    } else {
+                        date = new Date();
+                    }
+                    
+                    const formatted = date.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatted}</td>
+                        <td><strong>${escapeHtml(data.location || 'N/A')}</strong></td>
+                        <td>${escapeHtml(data.itemName || 'Article inconnu')}</td>
+                        <td><strong>${data.quantity || 0}</strong></td>
+                    `;
+                    logsTable.appendChild(row);
+                });
+
+                console.log("✓ Historique chargé:", snapshot.size, "entrées");
+            } catch (error) {
+                console.error("Erreur lors du chargement de l'historique:", error);
+                logsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--danger);">Erreur lors du chargement</td></tr>';
+            }
+        }
+
+        // Gérer les pages
+        function showPage(pageId) {
+            ['loginPage', 'adminLoginPage', 'stockPage', 'adminPage'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        // Afficher une notification
         function showNotification(message, type = 'success') {
-            debugLog(`📣 Notification: ${message} (${type})`);
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -1317,9 +1266,7 @@
             }, 3000);
         }
 
-        // ============================================
-        // AUTHENTIFICATION
-        // ============================================
+        // Connexion utilisateur
         window.login = function() {
             const location = document.getElementById('userLocation').value.trim();
             if (!location) {
@@ -1327,65 +1274,67 @@
                 return;
             }
             currentUser = location;
+            window.appState.currentUser = location;
             document.getElementById('currentUser').textContent = location;
             showPage('stockPage');
             loadStock();
             showNotification(`✓ Connecté en tant que ${location}`);
-            debugLog(`👤 Utilisateur connecté: ${location}`);
         };
 
         window.showAdminLogin = () => showPage('adminLoginPage');
         window.backToLogin = () => showPage('loginPage');
 
+        // Connexion admin
         window.loginAdmin = function() {
             const pwd = document.getElementById('adminPassword').value;
             if (pwd === ADMIN_PASSWORD) {
                 isAdmin = true;
+                window.appState.isAdmin = true;
                 showPage('adminPage');
                 loadStock();
                 loadLogs();
-                updateStats();
                 showNotification('✓ Connexion administrateur réussie');
-                debugLog('🔐 Admin connecté');
             } else {
                 showNotification('❌ Mot de passe incorrect', 'error');
-                debugLog('❌ Échec connexion admin', 'error');
             }
         };
 
+        // Déconnexion
         window.logout = function() {
-            debugLog('👋 Déconnexion');
             currentUser = '';
             isAdmin = false;
+            window.appState.currentUser = '';
+            window.appState.isAdmin = false;
             document.getElementById('userLocation').value = '';
             document.getElementById('adminPassword').value = '';
             showPage('loginPage');
             showNotification('✓ Déconnexion réussie');
         };
 
-        // ============================================
-        // GESTION DES QUANTITÉS
-        // ============================================
+        // Changer la quantité
         window.changeQty = function(id, delta, max) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
-            
+
             let val = parseInt(input.value) || 1;
             val += delta;
-            
+
             if (max !== undefined) val = Math.min(val, max);
             val = Math.max(1, val);
-            
+
             input.value = val;
         };
 
+        window.addToCart = function(id, name, maxQty) {
+        // Prendre un article
         window.takeItem = function(id, name, maxQty) {
             const input = document.getElementById(`qty-${id}`);
             if (!input) return;
-            
+
             const qty = parseInt(input.value) || 1;
-            
+
             if (qty > maxQty) {
+                showNotification(`⚠️ Stock insuffisant. Maximum : ${maxQty}`, 'error');
                 showNotification(`⚠️ Stock insuffisant. Maximum disponible : ${maxQty}`, 'error');
                 return;
             }
@@ -1393,9 +1342,7 @@
             showConfirmationModal(id, name, qty);
         };
 
-        // ============================================
-        // MODALE DE CONFIRMATION
-        // ============================================
+        // Afficher la modale de confirmation
         function showConfirmationModal(id, name, qty) {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('fr-FR', { 
@@ -1436,12 +1383,18 @@
                     </div>
                     <div class="modal-buttons">
                         <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                        <button class="btn-confirm" id="confirmBtn-${id}">Confirmer</button>
                         <button class="btn-confirm" onclick="confirmTake('${id}', '${escapeHtml(name)}', ${qty})">Confirmer</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
 
+            // Ajouter l'événement de confirmation
+            const confirmBtn = document.getElementById(`confirmBtn-${id}`);
+            confirmBtn.addEventListener('click', () => confirmTake(id, name, qty));
+
+            // Fermer en cliquant sur l'overlay
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeModal();
@@ -1449,6 +1402,7 @@
             });
         }
 
+        // Fermer la modale
         window.closeModal = function() {
             const modal = document.querySelector('.modal-overlay');
             if (modal) {
@@ -1456,20 +1410,25 @@
             }
         };
 
-        // ============================================
-        // CONFIRMATION DE PRISE (AVEC EMAIL)
-        // ============================================
+        async function confirmTake(id, name, qty) {
+        // Confirmer la prise
         window.confirmTake = async function(id, name, qty) {
             closeModal();
 
             try {
-                debugLog(`📦 Début prise: ${qty}x ${name} par ${currentUser}`);
+                const timestamp = new Date();
+                
+                // Récupérer la quantité actuelle
+                const stockSnapshot = await getDocs(collection(db, "stock"));
+                console.log("Début de la prise:", { id, name, qty, user: currentUser });
 
                 // Vérifier le stock actuel
                 const stockDoc = await getDocs(collection(db, "stock"));
                 let currentQty = 0;
                 let itemFound = false;
-                
+
+                stockSnapshot.forEach((d) => {
+                    if (d.id === id) currentQty = d.data().quantity;
                 stockDoc.forEach((d) => {
                     if (d.id === id) {
                         currentQty = d.data().quantity;
@@ -1478,13 +1437,12 @@
                 });
 
                 if (!itemFound) {
-                    debugLog('❌ Article non trouvé', 'error');
                     showNotification('❌ Article non trouvé', 'error');
                     return;
                 }
 
                 if (currentQty < qty) {
-                    debugLog(`❌ Stock insuffisant: ${currentQty} < ${qty}`, 'error');
+                    showNotification('❌ Stock insuffisant', 'error');
                     showNotification(`❌ Stock insuffisant. Disponible : ${currentQty}`, 'error');
                     return;
                 }
@@ -1492,66 +1450,54 @@
                 // Mettre à jour le stock
                 const newQty = currentQty - qty;
                 await updateDoc(doc(db, "stock", id), {
+                    quantity: currentQty - qty
                     quantity: newQty
                 });
-                debugLog(`✓ Stock mis à jour: ${currentQty} → ${newQty}`);
 
                 // Ajouter dans l'historique
+                await addDoc(collection(db, "logs"), {
+                console.log("✓ Stock mis à jour:", currentQty, "→", newQty);
+
+                // Ajouter dans l'historique avec serverTimestamp
                 const logData = {
                     location: currentUser,
                     itemName: name,
                     quantity: qty,
+                    timestamp: timestamp
+                });
                     timestamp: serverTimestamp()
                 };
 
+                showNotification(`✓ ${qty} ${name} pris avec succès !`);
+                loadStock();
                 const logRef = await addDoc(collection(db, "logs"), logData);
-                debugLog(`✓ Log enregistré (ID: ${logRef.id})`);
-
-                // Envoi email
-                const now = new Date();
-                const emailData = {
-                    location: currentUser,
-                    itemName: name,
-                    quantity: qty,
-                    date: now.toLocaleDateString('fr-FR', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    }),
-                    time: now.toLocaleTimeString('fr-FR')
-                };
-
-                sendEmailNotification(emailData).then(success => {
-                    if (success) {
-                        debugLog('📧 Email de notification envoyé');
-                    }
-                });
+                console.log("✓ Log ajouté avec ID:", logRef.id);
 
                 showNotification(`✓ ${qty} × ${name} pris avec succès !`);
-                
+
+                // Mettre à jour les stats admin si on est admin
                 // Recharger les données
                 await loadStock();
                 if (isAdmin) {
+                    updateStats();
                     await loadLogs();
                     await updateStats();
                 }
 
             } catch (error) {
-                debugLog(`❌ ERREUR lors de la prise: ${error.message}`, 'error');
-                debugLog(`Code: ${error.code}`, 'error');
+                console.error('Error:', error);
+                showNotification('❌ Erreur lors de l\'enregistrement', 'error');
+                console.error('❌ Erreur complète:', error);
                 showNotification('❌ Erreur lors de l\'enregistrement: ' + error.message, 'error');
             }
+        }
         };
 
-        // ============================================
-        // MISE À JOUR STOCKS ADMIN
-        // ============================================
+        // Mettre à jour les stocks (admin)
         window.updateStocks = async function() {
             try {
-                debugLog('💾 Mise à jour des stocks par admin...');
                 const snapshot = await getDocs(collection(db, "stock"));
-                
+
                 let updated = 0;
                 for (const docSnap of snapshot.docs) {
                     const id = docSnap.id;
@@ -1560,33 +1506,29 @@
                         const newQty = parseInt(input.value) || 0;
                         await updateDoc(doc(db, "stock", id), { quantity: newQty });
                         updated++;
-                        debugLog(`✓ ${docSnap.data().name}: ${newQty}`);
                     }
                 }
 
+                showNotification('✓ Stocks mis à jour avec succès !');
+                loadStock();
                 showNotification(`✓ ${updated} articles mis à jour avec succès !`);
-                debugLog(`✓ Mise à jour terminée: ${updated} articles`);
                 await loadStock();
                 await updateStats();
 
             } catch (error) {
-                debugLog(`❌ Erreur mise à jour: ${error.message}`, 'error');
+                console.error('Error:', error);
+                console.error('Erreur:', error);
                 showNotification('❌ Erreur lors de la mise à jour', 'error');
             }
         };
 
+        // Initialiser le stock au chargement
+        initStock();
+        // Initialiser au chargement
         console.log("🚀 Démarrage de l'application...");
-        debugLog('🚀 Application MediStock v2.0');
-        
-        initStock()
-            .then(() => {
-                debugLog('✅ Application prête à l\'utilisation');
-                console.log("✓ Application prête");
-            })
-            .catch(error => {
-                debugLog(`❌ ERREUR FATALE: ${error.message}`, 'error');
-                alert('Erreur lors du démarrage. Consultez la console de debug (bouton 🐛).');
-            });
+        initStock().then(() => {
+            console.log("✓ Application prête");
+        });
     </script>
 </body>
 </html>
